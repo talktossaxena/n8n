@@ -1,0 +1,314 @@
+{
+  "name": "Birthday with to email id",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1312,
+        -212
+      ],
+      "id": "a8d48dd7-121a-421f-ac59-6fa1aeb8ad0b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eZ3QrbnRDRWf_Me9GxMNkFmnCqn7gIOqc-O6do6IWG8",
+          "mode": "list",
+          "cachedResultName": "birthdays",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eZ3QrbnRDRWf_Me9GxMNkFmnCqn7gIOqc-O6do6IWG8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "birthday",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1088,
+        -212
+      ],
+      "id": "88855450-3bda-4c7f-80c0-22ea62018d39",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PvlAb0as7X6NP09o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bb969915-cc41-4d81-89b1-e8110da51447",
+              "leftValue": "={{ $json.DATE.substring(0, 5) }}",
+              "rightValue": "={{ $now.toFormat('dd-MM') }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -864,
+        -212
+      ],
+      "id": "4ca0ff87-c95f-4537-9c8d-04966fdcc7e2",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -640,
+        -212
+      ],
+      "id": "8e6650d8-fcb8-4a44-93ca-3f74951e0e31",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a single and simple birthday wish subject line (with emojies) without any extra details",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -416,
+        -336
+      ],
+      "id": "fc6e7e94-26b8-41aa-abbc-92e17f4d38d4",
+      "name": "Email Subject"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -344,
+        -112
+      ],
+      "id": "32872e2f-508f-4cdf-a997-c94b203b1943",
+      "name": "Email Subject LLM",
+      "credentials": {
+        "anthropicApi": {
+          "id": "E0I8e6DJZvFdAvyt",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a single and simple birthday wish body (with emojies) without any extra details",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -64,
+        -336
+      ],
+      "id": "96793597-0061-4463-a0af-6eddd7bf87fd",
+      "name": "Email Body"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        8,
+        -112
+      ],
+      "id": "55af86e7-63b6-497d-a3ad-5c896e793fab",
+      "name": "Email Body LLM",
+      "credentials": {
+        "anthropicApi": {
+          "id": "E0I8e6DJZvFdAvyt",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Loop Over Items').item.json.EMAIL }}",
+        "subject": "={{ $('Loop Over Items').item.json.NAME }} - {{ $('Email Subject').item.json.text }}",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        -212
+      ],
+      "id": "3fefc0c5-4735-4e54-9227-e1339d808d18",
+      "name": "Send a message",
+      "webhookId": "b13bfe11-8905-4f39-a936-87d4de390608",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D00bTTeDoWnxOXJn",
+          "name": "Gmail account talktossaxena"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Email Subject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Subject": {
+      "main": [
+        [
+          {
+            "node": "Email Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Subject LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Subject",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Body": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Body LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Body",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f3451e2d-5751-4242-9531-c63d85993936",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bfd49b9dfb2ecb86163029d5744c012eeee5f1a722ee7a8664688227997365b"
+  },
+  "id": "Oa2PMqNoJdkXX3Fp",
+  "tags": []
+}
