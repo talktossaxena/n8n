@@ -1,0 +1,388 @@
+{
+  "name": "Student Management",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You have received a new email.\n\nFrom: {{ $json.From }}\nSubject: {{ $json.Subject }}\nThread ID: {{ $json.threadId }}\nMessage ID: {{ $json.id }}\n\nEmail Body:\n{{ $json.snippet }}\n\nProcess this email according to your instructions.",
+        "options": {
+          "systemMessage": "You are a student records manager. You manage a student database stored in Google Sheets.\n\nThe Google Sheets has the following columns (in order):\nA: Roll Number\nB: Student Name\nC: Age\nD: Branch\n\nYou will receive emails with subject either \"add student\" or \"delete student\".\n\nThe email body will contain student details in this format:\nRoll No: <number>\nName: <name>\nAge: <age>\nBranch: <branch>\n\n=== RULES ===\n\nFor emails with subject \"add student\":\n1. Parse the Roll No, Name, Age, and Branch from the email body.\n2. Use the 'Get Rows' tool to search for an existing record with the same Roll No in column A.\n3. If a record WITH the same Roll No already exists:\n   - Reply: \"Dear Sender, Student [Name] with Roll Number [Roll No] already exists in our records. Please send the email again with a unique roll number. Thank you.\"\n   - Do NOT add any record.\n4. If no record exists with that Roll No:\n   - Use the 'Append Row' tool to add a new row with: Roll No, Name, Age, Branch.\n   - Reply: \"Dear Sender, Student [Name] (Roll No: [Roll No], Age: [Age], Branch: [Branch]) has been successfully added to the records. Thank you.\"\n\nFor emails with subject \"delete student\":\n1. Parse the Roll No from the email body.\n2. Use the 'Get Rows' tool to find the student with that Roll No in column A.\n3. If the student is found:\n   - Use the 'Delete Row' tool to remove that row.\n   - Reply: \"Dear Sender, Student [Name] with Roll Number [Roll No] has been successfully deleted from the records. Thank you.\"\n4. If no student is found with that Roll No:\n   - Reply: \"Dear Sender, No student with Roll Number [Roll No] was found in our records. Please verify the roll number and try again. Thank you.\"\n\nFor any other email subject:\n   - Reply: \"Dear Sender, Your email could not be processed. Please send an email with subject 'add student' or 'delete student'. Thank you.\"\n\nAlways be polite and professional. Always include the student details in your confirmation replies.\nReturn ONLY the reply message text — nothing else.",
+          "maxIterations": 10,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "aa976791-92c5-435f-bfff-e65e96fc8c21",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -256,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-5",
+        "options": {
+          "maxTokensToSample": 1024,
+          "temperature": 0.2
+        }
+      },
+      "id": "3fe47ab0-744e-4ac2-8866-75a114c4530b",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        -496,
+        80
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "9TrAEOcEc72BStsX",
+          "name": "Anthropic account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Gmail Trigger').item.json.threadId }}",
+        "contextWindowLength": 10
+      },
+      "id": "96f81d73-0fdd-4760-9b25-8bfbda4573e2",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.From }}",
+        "subject": "=Re: {{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "41be991f-b0b6-443b-b077-d6e14e68c6d9",
+      "name": "Gmail Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        -128
+      ],
+      "webhookId": "a0488c4e-d148-4c48-8455-90484776d7a9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D00bTTeDoWnxOXJn",
+          "name": "Gmail account talktossaxena"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU",
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "student record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ROLL NUMBER": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ROLL_NUMBER', ``, 'string') }}",
+            "NAME": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('NAME', ``, 'string') }}",
+            "AGE": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AGE', ``, 'string') }}",
+            "BRANCH": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('BRANCH', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ROLL NUMBER",
+              "displayName": "ROLL NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AGE",
+              "displayName": "AGE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "BRANCH",
+              "displayName": "BRANCH",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -208,
+        64
+      ],
+      "id": "ed726bc5-96e8-41c1-8d87-a237cce0c722",
+      "name": "Append row Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PvlAb0as7X6NP09o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU",
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "student record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ROLL NUMBER",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -48,
+        64
+      ],
+      "id": "bfdf64ce-aea5-4354-b908-068657ce512b",
+      "name": "Get row(s) Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PvlAb0as7X6NP09o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU",
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "student record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Lyt6NTkuQl64QAEKyPFXxcsa1AgugdvzEA6Z540J5lU/edit#gid=0"
+        },
+        "startIndex": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Row_Number', ``, 'number') }}",
+        "numberToDelete": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Number_of_Rows_to_Delete', ``, 'number') }}"
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        64
+      ],
+      "id": "076f32df-433a-4668-bb92-71644fadbcee",
+      "name": "Delete rows Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PvlAb0as7X6NP09o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 416,
+        "width": 1216,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -704,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "fb8e316a-f41e-4a83-8bb5-73dd8421fe7d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "id": "10c6e4de-415a-4ef5-900f-3cca41f8d3da",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -128
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D00bTTeDoWnxOXJn",
+          "name": "Gmail account talktossaxena"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete rows Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e5a573fe-b3a6-4250-8bb2-7d3862998199",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bfd49b9dfb2ecb86163029d5744c012eeee5f1a722ee7a8664688227997365b"
+  },
+  "id": "6SoGmGM3rWhPiTBh",
+  "tags": []
+}
