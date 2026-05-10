@@ -43,3 +43,5 @@
     *   **Invalid subject:** It politely tells the sender that the request couldn't be processed.
 5.  📧 **The Output (Gmail Reply):**
     Once the AI completes the task (or hits an error), it generates a professional response and sends it back as a **Gmail Reply** to the original sender.
+
+<img width="911" height="303" alt="image" src="https://github.com/user-attachments/assets/639a2fed-5318-4d82-b5b0-2bbb063b5d74" />
