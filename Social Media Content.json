@@ -1,0 +1,502 @@
+{
+  "name": "Social Media Content",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "19r-UOvl7N5tKPAHRl93V1WSxY7H-wdFZ5gUR3giZp24",
+          "mode": "list",
+          "cachedResultName": "Social Media Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19r-UOvl7N5tKPAHRl93V1WSxY7H-wdFZ5gUR3giZp24/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19r-UOvl7N5tKPAHRl93V1WSxY7H-wdFZ5gUR3giZp24/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2b28fc38-284e-4c16-9513-bc0c534f84fa",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "jy3zVgUmfq0pM7uC",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"api_key\": \"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\",\n \"query\": \"{{ $json.query.replace(/\"/g, '\\\\\"') }}\",\n \"search_depth\": \"basic\",\n \"include_answer\": true,\n \"topic\": \"news\",\n \"include_raw_content\": true,\n \"max_results\": 3\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "18b723aa-1867-4d20-b0cf-f7357c58ae9b",
+      "name": "Search Web"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "432a8cce-b739-4d54-b0d5-4b75c638dab4",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "title,raw_content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "5a7e1320-8793-440c-ad9b-277f2d94b2b9",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Article Content:\n{{ $('Aggregate').item.json.data.toJsonString() }}\nTarget Audience:\n{{ $('Set Search Fields').last().json.targetAudience }}",
+        "options": {
+          "systemMessage": "** System Role **\nYou are a professional LinkedIn content specialist who turns articles\ninto high-performing LinkedIn posts aimed at specific professional audiences.\n** Task Details **\nUse the article provided to create a LinkedIn post that is:\nClear, engaging, and optimized for mobile reading\nTailored to the professional goals and interests of the target audience\nWritten in plain text only (no formatting), with line breaks for readability\nIncludes 1–2 emojis to add personality\nOffers real, practical value and includes a call to action\nEnds with 3–5 relevant hashtags\nOutput should contain only the final post text — nothing more\n** Post Requirements **\nKeep the tone human and conversational\nStay within 3,000 characters\nThe post should capture the essence of the article while aligning with what matters most to the audience\n** Example **\nInput: Article on productivity hacks for managers\nOutput:\n🔥 Ready to boost your productivity?\nManagers — if you're drowning in meetings and feeling the pressure, here's your reminder that working smarter is possible.\n👉 Try these simple shifts:\nUse the Eisenhower Matrix to sort priorities\nBlock out deep work sessions on your calendar\nDelegate more to free up mental space\nWhat’s helped you stay on top of things lately?\nDrop your favorite time-saving tip in the comments 👇\n#Leadership #WorkSmarter #TimeManagement #Productivity #CareerGrowth\n** Key Reminders **\nMatch the content to the audience's pain points, language, and motivation\nAlways include 1–2 emojis, a strong CTA, and useful takeaways\nUse clean, broken-up plain text (no formatting or extra output)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "8c425d0a-b74c-4b98-a2eb-63260f009689",
+      "name": "Linkdein"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab447c7c-39d3-4b32-b589-f611ef7abb84",
+              "name": "query",
+              "value": "={{ $json['Content Subject'] }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5e9f9e-943c-49a4-85d4-a1976f4ab972",
+              "name": "targetAudience",
+              "value": "={{ $json['Target Audience'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "222bc88c-7556-4fed-9312-fb3c18e498a7",
+      "name": "Set Search Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        1200,
+        224
+      ],
+      "id": "1971ffd3-88c1-4652-83ac-eb94f771b174",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "uulwBpaf6jZ2ekiP",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Article Content:\n{{ $('Aggregate').item.json.data.toJsonString() }}\nTarget Audience:\n{{ $('Set Search Fields').last().json.targetAudience }}\n",
+        "options": {
+          "systemMessage": "** System Role **\nYou are an expert Facebook content creator who transforms articles into concise,\nhigh-impact posts crafted for a specific audience.\n** Task Specification **\nUsing the provided article, create a Facebook post that is:\nShort, attention-grabbing, and easy to read on mobile\nDesigned to match the interests, needs, and goals of the target audience\nIncludes 1–2 to add personality\nProvides value or insight and includes a clear call to action\nContains 1–3 relevant hashtags\nOutputs only the post content — nothing else\n** Specifics and Context **\nThe post should capture the core idea of the article in one engaging message\nIt must get attention fast, deliver value immediately, and spark interaction (likes, comments, or shares)\n** Example **\nInput: Article about productivity tips for managers\nOutput:\n🔥 Too many meetings and tasks?\nHere’s how smart managers stay ahead:\nPrioritize with the Eisenhower Matrix\nBlock time to focus\nDelegate more, stress less\nWhat’s your favorite way to stay productive? Drop it below ⬇️\n#Productivity #Leadership #WorkSmart\n** Reminders **\nKeep the tone friendly and conversational\nUse emojis to highlight key points, not overload the post\nMake sure the content is relevant and valuable to the audience\nOnly provide the final post text, nothing extra"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "c82a68a7-8e5f-4df5-be64-49769b2c9913",
+      "name": "Facebook"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        1544,
+        224
+      ],
+      "id": "aa9984d7-56ad-4947-8b12-b4b829c00b7a",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "uulwBpaf6jZ2ekiP",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        1896,
+        224
+      ],
+      "id": "fa0cf2c2-1e44-42b7-a215-11d86ae2685b",
+      "name": "Anthropic Chat Model2",
+      "credentials": {
+        "anthropicApi": {
+          "id": "uulwBpaf6jZ2ekiP",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Article Content:\n{{ $('Aggregate').item.json.data.toJsonString() }}\nTarget Audience:\n{{ $('Set Search Fields').last().json.targetAudience }}",
+        "options": {
+          "systemMessage": "** System Role **\nYou are a skilled and creative blog writer capable of crafting engaging, concise,\nand well-structured two-paragraph blog articles based on provided content.\n** Task Specification **\nWrite a two-paragraph blog article using the provided content\nEnsure the blog is coherent, engaging, and informative for a general audience\nUse a professional yet friendly tone\nMaintain a logical structure that flows from introduction to conclusion\n** Specifics and Context **\nThis task is designed to create short, high-quality blog content\nThe goal is to capture attention while clearly delivering the intended message\nYour writing helps brands or individuals build thought leadership and connect with their audience\n** Examples **\nInput:\nContent: \"Remote work has grown 44% in the last five years. Benefits include flexibility and reduced commute times.\nChallenges include maintaining productivity and combating isolation.\"\nOutput:\nRemote work has become a transformative trend, with a 44% increase in adoption over the past five years.\nThe appeal lies in its flexibility, allowing employees to tailor their schedules and eliminate time-consuming commutes.\nThis shift has unlocked new possibilities for work-life balance and broadened the talent pool for businesses willing to embrace remote setups.\nHowever, remote work isn’t without its challenges.\nEmployees often face difficulties in maintaining productivity outside a structured office environment and struggle with feelings of isolation.\nAddressing these concerns requires thoughtful solutions,\nsuch as virtual collaboration tools and strategies to foster connection, ensuring remote work remains both productive and fulfilling.\nInput:\nContent: \"The Mediterranean diet includes fruits, vegetables, whole grains, and healthy fats like olive oil.\nStudies show it reduces the risk of heart disease and supports brain health.\"\nOutput:\nThe Mediterranean diet has long been celebrated as one of the healthiest eating patterns in the world.\nEmphasizing fresh fruits, vegetables, whole grains, and heart-healthy fats like olive oil, this diet is as delicious as it is nutritious.\nIts flavorful diversity makes it easy to adopt and sustain, whether you’re enjoying a vibrant Greek salad or a wholesome bowl of minestrone.\nWhat sets the Mediterranean diet apart is its scientifically backed health benefits.\nNumerous studies highlight its ability to reduce the risk of heart disease and support cognitive health,\nmaking it a cornerstone for longevity and wellness.\nBy prioritizing natural, unprocessed foods, this lifestyle offers a sustainable approach to eating well and living better.\n** Reminders **\nMaintain clarity and logical flow between paragraphs\nKeep the tone professional and engaging\nStay concise and aligned with the provided content"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1824,
+        0
+      ],
+      "id": "cd00509c-6e82-4d14-a9ab-2956499a9d6b",
+      "name": "Blog Post"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "19r-UOvl7N5tKPAHRl93V1WSxY7H-wdFZ5gUR3giZp24",
+          "mode": "list",
+          "cachedResultName": "Social Media Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19r-UOvl7N5tKPAHRl93V1WSxY7H-wdFZ5gUR3giZp24/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19r-UOvl7N5tKPAHRl93V1WSxY7H-wdFZ5gUR3giZp24/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Campaign": "={{ $('Google Sheets Trigger').last().json.Campaign }}",
+            "Content Subject": "={{ $('Google Sheets Trigger').last().json['Content Subject'] }}",
+            "Linkdin": "={{ $('Linkdein').item.json.output }}",
+            "Facebook": "={{ $('Facebook').item.json.output }}",
+            "Blog": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Campaign"
+          ],
+          "schema": [
+            {
+              "id": "Campaign",
+              "displayName": "Campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content Subject",
+              "displayName": "Content Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Target Audience",
+              "displayName": "Target Audience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Linkdin",
+              "displayName": "Linkdin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Blog",
+              "displayName": "Blog",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2176,
+        0
+      ],
+      "id": "48ec71eb-bf6c-4fda-9603-df97f17408d1",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Dx3SicqfYAQThux9",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Search Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Web": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Linkdein",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Search Fields": {
+      "main": [
+        [
+          {
+            "node": "Search Web",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Linkdein",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkdein": {
+      "main": [
+        [
+          {
+            "node": "Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Facebook",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook": {
+      "main": [
+        [
+          {
+            "node": "Blog Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Blog Post",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blog Post": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0f0c79c5-5cb9-4cba-b38d-93d66a465ea1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41557f9e958a88ad95b2b362579809328c565d2487d06025b18278e892d788b9"
+  },
+  "id": "NmG27VhCT6MIDlxe",
+  "tags": []
+}
