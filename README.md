@@ -412,12 +412,7 @@ Merges all split result items into a single JSON object passed to the AI agents.
 
 ## Overview
 
-This workflow is a conversational **AI Agent** that listens for chat messages and autonomously performs two actions based on natural language instructions:
-
-1. **Send emails** via Gmail
-2. **Create events** in Google Calendar
-
-The agent uses **Claude Haiku 4.5** as its language model and decides which tool(s) to invoke based on the user's message — no manual routing or branching required.
+This workflow is a conversational **AI Agent** that listens for chat messages and autonomously performs actions across Gmail, Google Calendar, and Google Sheets — all from natural language instructions. The agent uses **Claude Haiku 4.5** to reason about the user's request and decides which tool(s) to invoke without any manual routing.
 
 ---
 
@@ -434,7 +429,7 @@ The agent uses **Claude Haiku 4.5** as its language model and decides which tool
 | **Name** | Email and Meeting |
 | **Trigger** | Chat message (n8n Chat UI / webhook) |
 | **AI Model** | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |
-| **Tools Available** | Gmail (send email), Google Calendar (create event) |
+| **Tools Available** | 7 tools across Gmail, Google Calendar, Google Sheets |
 | **Status** | Inactive (requires manual activation) |
 | **Execution Order** | v1 |
 
@@ -447,22 +442,39 @@ The agent uses **Claude Haiku 4.5** as its language model and decides which tool
 │  When chat message received  │  ← User sends a message in n8n Chat UI
 └──────────────┬───────────────┘
                ↓
-┌──────────────────────────────┐
-│          AI Agent            │  ← Powered by Claude Haiku 4.5
-│                              │
-│  Tools available:            │
-│  ├─ Send a message in Gmail  │
-│  └─ Create event in Calendar │
-└──────────────┬───────────────┘
+┌──────────────────────────────────────────────────┐
+│                   AI Agent                       │
+│           (Claude Haiku 4.5)                     │
+│                                                  │
+│  Tools:                                          │
+│  ├─ 1. Send a message in Gmail                   │
+│  ├─ 2. Create an event in Google Calendar        │
+│  ├─ 3. Get many labels in Gmail                  │
+│  ├─ 4. Add label to message in Gmail             │
+│  ├─ 5. Get many messages in Gmail                │
+│  └─ 6. Append row in sheet in Google Sheets      │
+└──────────────────────────────────────────────────┘
                ↓
-     (Agent decides which tool
-      to call based on the message)
-         ↙           ↘
-┌──────────────┐  ┌───────────────────────┐
-│  Gmail Tool  │  │ Google Calendar Tool  │
-│ (Send Email) │  │   (Create Event)      │
-└──────────────┘  └───────────────────────┘
+    Agent picks the right tool(s) based on
+    the user's natural language message
 ```
+
+---
+
+## Nodes Overview
+
+| # | Node | Type | Purpose |
+|---|---|---|---|
+| 1 | When chat message received | Trigger | Entry point — receives user message |
+| 2 | AI Agent | Agent | Reasons and decides which tools to call |
+| 3 | Anthropic Chat Model | LLM | Powers the agent with Claude Haiku 4.5 |
+| 4 | Send a message in Gmail | Tool | Composes and sends an email |
+| 5 | Create an event in Google Calendar | Tool | Creates a calendar event |
+| 6 | Get many labels in Gmail | Tool | Fetches all available Gmail labels |
+| 7 | Add label to message in Gmail | Tool | Applies a label to a specific email |
+| 8 | Get many messages in Gmail | Tool | Retrieves the latest email(s) from inbox |
+| 9 | Append row in sheet in Google Sheets | Tool | Logs email details to a spreadsheet |
+| 10 | Sticky Note | Note | Visual annotation on the canvas |
 
 ---
 
@@ -473,14 +485,14 @@ The agent uses **Claude Haiku 4.5** as its language model and decides which tool
 |---|---|
 | **Node Type** | `chatTrigger` (LangChain, v1.4) |
 | **Webhook ID** | `089e2a22-e368-4b80-8060-e55766bf67d5` |
-| **Interface** | n8n built-in Chat UI or external webhook |
 
-Listens for incoming chat messages and passes them to the AI Agent as the user input. This is the entry point of the workflow.
+Listens for incoming chat messages and passes them to the AI Agent as user input.
 
-**Example user messages this workflow can handle:**
-- *"Send an email to john@example.com about the project update"*
-- *"Schedule a meeting tomorrow from 2pm to 3pm"*
-- *"Email Sarah and also block my calendar for Friday afternoon"*
+**Example messages this workflow handles:**
+- *"Send an email to alex@company.com about tomorrow's meeting"*
+- *"Schedule a call from 3pm to 4pm today"*
+- *"Label my last email as Important"*
+- *"Get my latest email and log it to the sheet"*
 
 ---
 
@@ -488,22 +500,27 @@ Listens for incoming chat messages and passes them to the AI Agent as the user i
 | Property | Value |
 |---|---|
 | **Node Type** | `agent` (LangChain, v3.1) |
-| **Language Model** | Anthropic Chat Model (Claude Haiku 4.5) |
-| **Tools Connected** | Gmail Tool, Google Calendar Tool |
+| **Model** | Anthropic Chat Model (Claude Haiku 4.5) |
+| **Tools Connected** | 6 tools (see below) |
 
-The core of the workflow. The agent receives the user's chat message, reasons about what action(s) to take, and calls the appropriate tool(s) with the right parameters — all extracted from the natural language input.
+The brain of the workflow. Receives the user's chat message, determines what action(s) to take, calls the right tool(s) in the correct sequence, and returns a response.
+
+**Multi-step example:**
+> *"Label my last email as Follow Up"*
+> 1. Calls **Get many messages** → gets latest email ID
+> 2. Calls **Get many labels** → finds the "Follow Up" label ID
+> 3. Calls **Add label to message** → applies the label
 
 ---
 
 ### 3. Anthropic Chat Model
 | Property | Value |
 |---|---|
-| **Node Type** | `lmChatAnthropic` (LangChain, v1.5) |
+| **Node Type** | `lmChatAnthropic` (v1.5) |
 | **Model** | `claude-haiku-4-5-20251001` |
 | **Credential** | Anthropic account |
-| **Connected To** | AI Agent (as language model) |
 
-Provides the reasoning and language understanding for the AI Agent. Claude Haiku 4.5 is used for its speed and cost-efficiency.
+Provides language understanding and reasoning for the AI Agent. Claude Haiku 4.5 is chosen for speed and cost-efficiency.
 
 ---
 
@@ -511,18 +528,16 @@ Provides the reasoning and language understanding for the AI Agent. Claude Haiku
 | Property | Value |
 |---|---|
 | **Node Type** | `gmailTool` (v2.2) |
+| **Operation** | Send message |
 | **Credential** | Gmail OAuth2 |
-| **Connected To** | AI Agent (as tool) |
 
-**AI-filled Parameters:**
+Composes and sends an email. All fields are filled by the AI from the user's message.
 
-| Parameter | How it's filled |
+| Parameter | Filled By |
 |---|---|
-| `To` | Extracted from user message by the AI |
-| `Subject` | Generated by the AI based on context |
-| `Message` | Composed by the AI from the user's instructions |
-
-The agent dynamically fills all fields using `$fromAI()` — no hardcoded values. The AI composes the full email based on the user's natural language request.
+| `To` | AI extracts recipient from user message |
+| `Subject` | AI generates based on context |
+| `Message` | AI composes the full email body |
 
 ---
 
@@ -530,74 +545,154 @@ The agent dynamically fills all fields using `$fromAI()` — no hardcoded values
 | Property | Value |
 |---|---|
 | **Node Type** | `googleCalendarTool` (v1.3) |
+| **Operation** | Create event |
 | **Calendar** | `talktossaxena@gmail.com` |
 | **Credential** | Google Calendar OAuth2 |
-| **Connected To** | AI Agent (as tool) |
 
-**AI-filled Parameters:**
+Creates a calendar event. The AI parses natural language time expressions into correct datetime formats.
 
-| Parameter | How it's filled |
+| Parameter | Filled By |
 |---|---|
-| `Start` | Parsed from the user message (e.g. "tomorrow at 2pm") |
-| `End` | Parsed from the user message (e.g. "3pm") |
+| `Start` | AI parses from message (e.g. "tomorrow 2pm") |
+| `End` | AI parses from message (e.g. "3pm") |
 
-The agent intelligently parses date and time expressions from the user's message and converts them to the correct format for Google Calendar.
+---
+
+### 6. Get Many Labels in Gmail
+| Property | Value |
+|---|---|
+| **Node Type** | `gmailTool` (v2.2) |
+| **Operation** | `getAll` (resource: label) |
+| **Credential** | Gmail OAuth2 |
+
+Fetches all Gmail labels from the user's account. The agent calls this before applying a label to ensure it uses the correct label ID.
+
+---
+
+### 7. Add Label to Message in Gmail
+| Property | Value |
+|---|---|
+| **Node Type** | `gmailTool` (v2.2) |
+| **Operation** | `addLabels` |
+| **Credential** | Gmail OAuth2 |
+
+Applies one or more labels to a specific Gmail message.
+
+| Parameter | Filled By |
+|---|---|
+| `Message_ID` | AI retrieves from Get Many Messages tool |
+| `Label_Names_or_IDs` | AI retrieves from Get Many Labels tool |
+
+---
+
+### 8. Get Many Messages in Gmail
+| Property | Value |
+|---|---|
+| **Node Type** | `gmailTool` (v2.2) |
+| **Operation** | `getAll` |
+| **Limit** | `1` (most recent email) |
+| **Credential** | Gmail OAuth2 |
+
+Fetches the latest email from the inbox. This is the key tool that enables the agent to act on the *last received email* without asking the user for a Message ID.
+
+**Typical agent flow using this tool:**
+```
+User: "Add 'Follow Up' label to my last email"
+  → Agent calls Get Many Messages (limit 1)
+  → Extracts message ID from result
+  → Agent calls Get Many Labels
+  → Extracts label ID for 'Follow Up'
+  → Agent calls Add Label to Message
+  → ✅ Done
+```
+
+---
+
+### 9. Append Row in Sheet in Google Sheets
+| Property | Value |
+|---|---|
+| **Node Type** | `googleSheetsTool` (v4.7) |
+| **Operation** | Append row |
+| **Spreadsheet** | `email details` |
+| **Sheet** | `Sheet1` |
+| **Credential** | Google Sheets OAuth2 |
+
+Logs email information to a Google Sheet. Useful for keeping a record of sent or received emails.
+
+| Column | Filled By |
+|---|---|
+| `Email Title` | AI extracts/generates the email subject |
+| `Email Message` | AI extracts/generates the email body |
 
 ---
 
 ## Credentials Required
 
-| Credential | Node |
+| Credential | Node(s) |
 |---|---|
 | **Anthropic API** | Anthropic Chat Model |
-| **Gmail OAuth2** | Send a message in Gmail |
+| **Gmail OAuth2** | Send message, Get labels, Add label, Get messages |
 | **Google Calendar OAuth2** | Create an event in Google Calendar |
+| **Google Sheets OAuth2** | Append row in Google Sheets |
 
 ---
 
 ## Setup Guide
 
-### Step 1 — Import the Workflow
-- In n8n, go to **Workflows → Import from file**
-- Select `Email_and_Meeting.json`
+### Step 1 — Import Workflow
+- In n8n: **Workflows → Import from file → `email_workflow.json`**
 
 ### Step 2 — Connect Credentials
 
-**Anthropic API**
-- Go to **Credentials → New → Anthropic**
-- Paste your API key from [console.anthropic.com](https://console.anthropic.com)
+**Anthropic**
+- **Credentials → New → Anthropic API**
+- Paste your key from [console.anthropic.com](https://console.anthropic.com)
 
-**Gmail OAuth2**
-- Go to **Credentials → New → Gmail OAuth2**
-- Authenticate with the Google account you want to send emails from
+**Gmail (OAuth2)**
+- **Credentials → New → Gmail OAuth2**
+- Sign in with your Google account
+- Required scope: `https://mail.google.com/`
 
-**Google Calendar OAuth2**
-- Go to **Credentials → New → Google Calendar OAuth2**
-- Authenticate with the Google account that owns the calendar
-- Make sure the **Google Calendar API** is enabled in your [Google Cloud Console](https://console.cloud.google.com)
+**Google Calendar (OAuth2)**
+- **Credentials → New → Google Calendar OAuth2**
+- Sign in with the calendar owner's Google account
+- Enable **Google Calendar API** in [Google Cloud Console](https://console.cloud.google.com)
+- Update the calendar field from `talktossaxena@gmail.com` to your own calendar
 
-### Step 3 — Activate the Workflow
-- Toggle the workflow **Active** in the top-right corner of the editor
+**Google Sheets (OAuth2)**
+- **Credentials → New → Google Sheets OAuth2**
+- Sign in with the Google account that owns the `email details` spreadsheet
+- Ensure `Sheet1` has columns: `Email Title`, `Email Message`
 
-### Step 4 — Test It
-- Open the **Chat** panel in n8n
-- Try a message like:
-  ```
-  Send an email to test@example.com with subject "Hello" and say "Just checking in!"
-  ```
-  or
-  ```
-  Create a meeting tomorrow from 10am to 11am
-  ```
+### Step 3 — Activate
+- Toggle the workflow **Active** in the top-right corner
+
+### Step 4 — Test via Chat
+Open the **Chat** panel and try:
+```
+Label my last email as Important
+```
+```
+Send an email to test@example.com saying the meeting is at 3pm
+```
+```
+Schedule a meeting tomorrow from 10am to 11am
+```
+```
+Log my last email to the sheet
+```
 
 ---
 
 ## Example Use Cases
 
-| User Message | Action Taken |
+| User Message | Tools Called |
 |---|---|
-| `"Email Alex at alex@co.com about the Q3 report"` | Sends a Gmail with AI-composed subject and body |
-| `"Schedule a standup tomorrow 9am to 9:30am"` | Creates a Google Calendar event |
-| `"Send a follow-up email to the client and block 2 hours Friday for prep"` | Sends email **and** creates calendar event |
+| *"Email John at john@co.com about the report"* | Send message in Gmail |
+| *"Block my calendar 2pm–3pm today"* | Create event in Google Calendar |
+| *"Label my last email as Follow Up"* | Get messages → Get labels → Add label |
+| *"What labels do I have in Gmail?"* | Get many labels |
+| *"Log my last email to the sheet"* | Get messages → Append row in Sheets |
+| *"Email Sarah and create a meeting for tomorrow"* | Send message + Create event |
 
-<img width="572" height="367" alt="image" src="https://github.com/user-attachments/assets/62ba50d0-67a2-4399-99e8-49e3a5ab5729" />
+<img width="675" height="250" alt="image" src="https://github.com/user-attachments/assets/4f0a43ac-37d3-40a6-a6f3-ba60de6369be" />
