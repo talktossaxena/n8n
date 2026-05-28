@@ -1074,3 +1074,232 @@ This workflow acts as an **orchestrator**. It collects user input and delegates 
 [port.xlsx](https://github.com/user-attachments/files/28330254/port.xlsx)
 
 <img width="394" height="423" alt="image" src="https://github.com/user-attachments/assets/ed669dd2-a342-4dde-9231-a80caf94312d" />
+
+
+# AI Agent Email Assistant — n8n Workflow
+
+## Overview
+
+This workflow builds a **conversational AI-powered email assistant** accessible via a chat interface. Users can instruct the assistant in plain language to send emails, read emails, forward emails, or look up customer contact information — and the AI Agent handles everything autonomously using the tools at its disposal.
+
+---
+
+## Architecture Diagram
+
+```
+Chat Interface (User)
+        ↓
+When chat message received (Chat Trigger)
+        ↓
+AI Agent  ←──── OpenAI Chat Model (gpt-5-mini)
+    ↑               ↑
+Simple Memory    [conversation history]
+        │
+        ├──── Tool: Customer Database (Google Sheets)
+        │         └─ Look up email / phone by contact name
+        │
+        └──── Tool: Send Email (Gmail)
+                  └─ Send / read / forward emails
+```
+
+---
+
+## Node-by-Node Breakdown
+
+### 1. When chat message received *(Chat Trigger)*
+
+| Property | Value |
+|---|---|
+| Type | `chatTrigger` |
+| Webhook ID | `e8bf2b88-207f-482a-8179-d06256dc474b` |
+
+The **entry point** of the workflow. Exposes an n8n chat interface where the user types instructions in natural language, such as:
+
+- *"Send an email to John about the meeting tomorrow"*
+- *"Read my latest emails"*
+- *"Forward the last email from Sarah to Mike"*
+
+Each message triggers the AI Agent to process the request and decide which tools to use.
+
+---
+
+### 2. AI Agent
+
+| Property | Value |
+|---|---|
+| Type | `agent` (LangChain) |
+| Model | OpenAI Chat Model (gpt-5-mini) |
+| Memory | Simple Memory (buffer window) |
+| Tools | Customer Database, Send Email |
+
+The **brain** of the workflow. Receives the user's chat message, reasons about what needs to be done, and autonomously calls the appropriate tools in the right order.
+
+**System Prompt instructions:**
+- Role: Personal assistant AI Agent
+- Primary task: Handle all email-related actions
+- Must **always look up the Customer Database first** before sending or reading emails (to resolve names to email addresses)
+- Emails must be **professional** with clear structure and line breaks
+- Always signs off as:
+  ```
+  Best regards,
+  Ssinha
+  ```
+- Has access to the **current date** via `{{ $now.format('DD') }}` injected at runtime
+
+**Tool usage logic (enforced via system prompt):**
+
+```
+User asks to email "John"
+        ↓
+Agent calls: Customer Database → finds john@example.com
+        ↓
+Agent calls: Send Email → sends to john@example.com
+        ↓
+Agent replies to chat: "Email sent to John successfully."
+```
+
+---
+
+### 3. OpenAI Chat Model
+
+| Property | Value |
+|---|---|
+| Type | `lmChatOpenAi` |
+| Model | `gpt-5-mini` |
+| Credential | OpenAI account |
+| Connection | `ai_languageModel` → AI Agent |
+
+Provides the language intelligence for the AI Agent. Processes the user's natural language input and the agent's internal reasoning to decide on tool calls and generate responses.
+
+---
+
+### 4. Simple Memory
+
+| Property | Value |
+|---|---|
+| Type | `memoryBufferWindow` |
+| Connection | `ai_memory` → AI Agent |
+
+Maintains a **sliding window of conversation history** so the AI Agent can remember context across multiple messages in the same session. This enables multi-turn conversations such as:
+
+> User: *"Send an email to Sarah about the project update."*
+> Agent: *"Email sent!"*
+> User: *"Now forward it to Mike too."* ← Agent remembers the context
+
+---
+
+### 5. Send Email *(Gmail Tool)*
+
+| Property | Value |
+|---|---|
+| Type | `gmailTool` |
+| Credential | Gmail OAuth2 account |
+| Connection | `ai_tool` → AI Agent |
+
+A Gmail-connected tool that the AI Agent calls to handle all email actions. All parameters are dynamically filled by the AI using `$fromAI()`:
+
+| Parameter | Source |
+|---|---|
+| `To` | AI-determined recipient address |
+| `Subject` | AI-generated subject line |
+| `Message` | AI-composed email body |
+
+The AI formats the email body with proper structure, line breaks, and always appends the sign-off defined in the system prompt.
+
+---
+
+### 6. Customer Database *(Google Sheets Tool)*
+
+| Property | Value |
+|---|---|
+| Type | `googleSheetsTool` |
+| Spreadsheet | `customer database` |
+| Sheet | `Sheet1` |
+| Spreadsheet ID | `1pIxSsNXPD2B4gk-8olmPo0NvTzle6CRUfGV_CK5OF2I` |
+| Credential | Google Sheets OAuth2 account |
+| Connection | `ai_tool` → AI Agent |
+
+A Google Sheets-backed tool that acts as a **contact directory**. The AI Agent queries this sheet to look up:
+- Email addresses
+- Phone numbers
+- Any other contact information stored in the sheet
+
+The system prompt enforces that this tool is **always called first** before any email action, ensuring the agent resolves contact names to actual email addresses rather than guessing.
+
+---
+
+## Credentials Required
+
+| Credential | Node | Purpose |
+|---|---|---|
+| **OpenAI account** | OpenAI Chat Model | API key for GPT model inference |
+| **Gmail OAuth2** | Send Email | Send, read, and forward Gmail emails |
+| **Google Sheets OAuth2** | Customer Database | Read contact information from Google Sheets |
+
+---
+
+## Example Conversations
+
+### Sending an email by name
+```
+User:  "Send an email to Alice about the Q3 report being ready."
+
+Agent: [calls Customer Database → finds alice@company.com]
+       [calls Send Email → composes and sends professional email]
+       "Done! I've sent an email to Alice (alice@company.com)
+        letting her know the Q3 report is ready."
+```
+
+### Reading emails
+```
+User:  "Do I have any new emails from Bob?"
+
+Agent: [calls Customer Database → finds bob@company.com]
+       [calls Send Email (read mode) → fetches emails from Bob]
+       "You have 2 unread emails from Bob. The latest one is
+        about the contract review dated today."
+```
+
+### Forwarding an email
+```
+User:  "Forward the last email from Bob to the finance team."
+
+Agent: [calls Customer Database → finds finance team email]
+       [calls Send Email → forwards the email]
+       "Forwarded Bob's last email to the finance team."
+```
+
+---
+
+## Workflow Settings
+
+| Setting | Value |
+|---|---|
+| Status | **Inactive** |
+| Execution Order | v1 |
+| Binary Mode | separate |
+| Workflow ID | `otoM2GoZweMgJYcJ` |
+
+> ⚠️ The workflow is currently **inactive**. Activate it to make the chat interface live.
+
+---
+
+## Setup Checklist
+
+Before activating this workflow, ensure the following are configured:
+
+- [ ] **OpenAI API key** connected under *OpenAI account* credential
+- [ ] **Gmail OAuth2** authorized under *Gmail account* credential
+- [ ] **Google Sheets OAuth2** authorized under *Google Sheets account* credential
+- [ ] **Customer database spreadsheet** (`Sheet1`) populated with contact names, emails, and phone numbers
+- [ ] Update the sign-off name in the system prompt (`Ssinha`) to the correct sender name
+
+---
+
+## Notes
+
+- The agent uses `gpt-5-mini` — swap to `gpt-4o` for more complex reasoning or longer email chains.
+- The **Simple Memory** node uses a buffer window, meaning it retains only the last N messages. For very long sessions, earlier context may be forgotten.
+- The current date is injected into the system prompt using `{{ $now.format('DD') }}` — only the day number. Consider extending this to `$now.format('DD MMM YYYY')` for full date context.
+- The `Customer Database` tool is read-only as configured — it looks up contacts but does not write back to the sheet.
+- Email actions (send, read, forward) are all handled by the single **Gmail tool** node, with the AI deciding the action based on context.

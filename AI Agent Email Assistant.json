@@ -1,0 +1,215 @@
+{
+  "name": "AI Agent Email Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "134b6d5d-1a3e-40e3-a8a0-8e02f58a2450",
+      "name": "When chat message received",
+      "webhookId": "e8bf2b88-207f-482a-8179-d06256dc474b"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "#Role\nYou are a personal assistant AI Agent. Your primary role is to send emails. You have access to two tools: Customer Database and Send Email.\n\n##Tools\n1.Customer Database:\nUse this tool when you need to look up contact information like an email address or phone number. You need to use this tool BEFORE sending an email or BEFORE getting emails.\n2. Send Email:\nUse this for handling all email-related actions, like sending emails, reading emails, or forwarding emails.\n- Keep emails professional.\n- Format nicely the Body of the email with line breaks and clear structure.\n- Always sing off as\nBest regards,\nSsinha\n\nHere is the current time/date: {{ $now.format('DD')}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        16,
+        -16
+      ],
+      "id": "9a196b6a-e07c-4e05-9547-d81b8dfe17c7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        208
+      ],
+      "id": "7e268574-a458-4869-b568-aa39c8c14d39",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "XMFtxPmWJTsQzIam",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        16,
+        208
+      ],
+      "id": "479830b3-04ba-4dc4-b438-2dcce96b2cf7",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        208
+      ],
+      "id": "2662147b-a525-4c1a-8b3d-19f62c93f913",
+      "name": "Send Email",
+      "webhookId": "1b3d5763-8153-45be-9bfe-4d59c896285c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gSeOWhzlRCurlAsF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pIxSsNXPD2B4gk-8olmPo0NvTzle6CRUfGV_CK5OF2I",
+          "mode": "list",
+          "cachedResultName": "customer database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pIxSsNXPD2B4gk-8olmPo0NvTzle6CRUfGV_CK5OF2I/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pIxSsNXPD2B4gk-8olmPo0NvTzle6CRUfGV_CK5OF2I/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        208
+      ],
+      "id": "2997ea25-1fe4-4b46-a22d-add8f997ae5a",
+      "name": "Customer Database",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kXNxmcFmVxWUrz2L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 592,
+        "width": 1136,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "02650a0b-d775-49e0-a973-a6448af52eff",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Database": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7b33fe3c-7357-4c52-8f50-2ce3386c969d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e65981d6b69d01272dda4bcd11b90796e4bf108e1ef7a197e3eac80ad7562365"
+  },
+  "id": "otoM2GoZweMgJYcJ",
+  "tags": []
+}
