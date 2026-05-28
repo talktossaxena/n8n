@@ -1303,3 +1303,5 @@ Before activating this workflow, ensure the following are configured:
 - The current date is injected into the system prompt using `{{ $now.format('DD') }}` — only the day number. Consider extending this to `$now.format('DD MMM YYYY')` for full date context.
 - The `Customer Database` tool is read-only as configured — it looks up contacts but does not write back to the sheet.
 - Email actions (send, read, forward) are all handled by the single **Gmail tool** node, with the AI deciding the action based on context.
+
+<img width="642" height="313" alt="image" src="https://github.com/user-attachments/assets/d8acdd47-6081-45ac-9e85-bdabf972103b" />
