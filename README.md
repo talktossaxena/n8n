@@ -815,4 +815,5 @@ Before running this workflow you need:
 
 - [how to access n8n on local machine from internet.docx](https://github.com/user-attachments/files/28329874/how.to.access.n8n.on.local.machine.from.internet.docx)
 
-<img width="805" height="314" alt="image" src="https://github.com/user-attachments/assets/ad1983d3-f1b2-481b-9eb2-4115a3e783b3" />
+<img width="533" height="223" alt="image" src="https://github.com/user-attachments/assets/c74b5ca6-c34e-487b-9592-77da5c764690" />
+
