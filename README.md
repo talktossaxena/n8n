@@ -1305,3 +1305,491 @@ Before activating this workflow, ensure the following are configured:
 - Email actions (send, read, forward) are all handled by the single **Gmail tool** node, with the AI deciding the action based on context.
 
 <img width="642" height="313" alt="image" src="https://github.com/user-attachments/assets/d8acdd47-6081-45ac-9e85-bdabf972103b" />
+
+
+Here's a Markdown documentation of the **RAG Project 1** n8n workflow.
+
+# RAG Project 1 – n8n Workflow Documentation
+
+## Overview
+
+This workflow implements a simple **Retrieval-Augmented Generation (RAG)** system using:
+
+* Google Drive
+* CSV Data Loader
+* OpenAI Embeddings
+* Pinecone Vector Database
+* OpenAI Chat Model
+* AI Agent
+* Memory
+* Calculator Tool
+
+The workflow has two distinct functions:
+
+1. **Data Ingestion Pipeline** – Loads a CSV file containing birthday information into Pinecone.
+2. **AI Chat Assistant** – Retrieves information from Pinecone and answers user questions.
+
+---
+
+# Architecture
+
+## Data Ingestion Flow
+
+```text
+Manual Trigger
+      │
+      ▼
+Download CSV from Google Drive
+      │
+      ▼
+Default Data Loader
+      │
+      ▼
+OpenAI Embeddings
+      │
+      ▼
+Pinecone Vector Store
+```
+
+---
+
+## Query & Retrieval Flow
+
+```text
+Chat Trigger
+      │
+      ▼
+AI Agent
+ ├── OpenAI Chat Model
+ ├── Simple Memory
+ ├── Pinecone Vector Store Tool
+ └── Calculator
+```
+
+---
+
+# Workflow Components
+
+## 1. Manual Trigger
+
+### Node
+
+When clicking 'Execute workflow'
+
+### Purpose
+
+Starts the document ingestion process manually.
+
+### Use Case
+
+Whenever the source CSV file changes and needs to be re-indexed into Pinecone.
+
+---
+
+## 2. Download File
+
+### Node
+
+Download file
+
+### Integration
+
+Google Drive
+
+### Purpose
+
+Downloads the source dataset from Google Drive.
+
+### Source File
+
+```text
+birthdays.csv
+```
+
+The file contains birthday-related information about people.
+
+### Output
+
+Binary CSV file data.
+
+---
+
+## 3. Default Data Loader
+
+### Node
+
+Default data loader
+
+### Configuration
+
+* Data Type: Binary
+* Loader: CSV Loader
+* Separator: Comma (,)
+
+### Purpose
+
+Converts the downloaded CSV file into LangChain documents.
+
+### Responsibilities
+
+* Reads CSV rows
+* Converts rows into documents
+* Prepares content for embedding generation
+
+---
+
+## 4. OpenAI Embeddings
+
+### Node
+
+Embeddings OpenAI
+
+### Purpose
+
+Converts text documents into vector embeddings.
+
+### Configuration
+
+```text
+Dimensions: 1024
+```
+
+### Responsibilities
+
+* Transform text into numerical vectors
+* Create semantic representations
+* Enable similarity search in Pinecone
+
+---
+
+## 5. Pinecone Vector Store
+
+### Node
+
+Pinecone Vector Store
+
+### Mode
+
+```text
+Insert Documents
+```
+
+### Index
+
+```text
+n8n-dense-index
+```
+
+### Purpose
+
+Stores embeddings generated from the CSV file.
+
+### Responsibilities
+
+* Receive document chunks
+* Store embeddings
+* Enable future retrieval operations
+
+---
+
+# Retrieval System
+
+After ingestion, the workflow functions as a Retrieval-Augmented Generation system.
+
+---
+
+## 6. Chat Trigger
+
+### Node
+
+When chat message received
+
+### Purpose
+
+Acts as the entry point for user queries.
+
+### Example
+
+```text
+When is Rahul's birthday?
+```
+
+The message is sent to the AI Agent.
+
+---
+
+## 7. AI Agent
+
+### Node
+
+AI Agent
+
+### System Prompt
+
+```text
+You are a helpful assistant.
+Only use the Pinecone Vector Store Tool to retrieve data of persons.
+```
+
+### Purpose
+
+Coordinates all tools and determines how to answer user questions.
+
+### Responsibilities
+
+* Interpret user requests
+* Retrieve information from Pinecone
+* Generate natural language responses
+
+---
+
+## 8. OpenAI Chat Model
+
+### Node
+
+OpenAI Chat Model
+
+### Model
+
+```text
+gpt-4.1-mini
+```
+
+### Purpose
+
+Provides reasoning and response generation.
+
+### Responsibilities
+
+* Understand user intent
+* Generate final answers
+* Use retrieved context from Pinecone
+
+---
+
+## 9. Pinecone Vector Store Tool
+
+### Node
+
+Pinecone Vector Store Tool
+
+### Mode
+
+```text
+Retrieve As Tool
+```
+
+### Description
+
+```text
+Contains data about birthday.
+```
+
+### Configuration
+
+```text
+Top K = 20
+```
+
+### Purpose
+
+Performs semantic search against the Pinecone index.
+
+### Retrieval Process
+
+1. User asks a question.
+2. Query is converted into an embedding.
+3. Pinecone searches similar records.
+4. Top 20 matches are returned.
+5. AI Agent uses the retrieved context.
+
+---
+
+## 10. Simple Memory
+
+### Node
+
+Simple Memory
+
+### Purpose
+
+Maintains conversation history.
+
+### Benefits
+
+* Supports follow-up questions
+* Preserves context
+* Enables multi-turn conversations
+
+### Example
+
+User:
+
+```text
+When is Rahul's birthday?
+```
+
+AI:
+
+```text
+Rahul's birthday is 10 March.
+```
+
+User:
+
+```text
+How old is he?
+```
+
+The memory enables the AI to understand that "he" refers to Rahul.
+
+---
+
+## 11. Calculator Tool
+
+### Node
+
+Calculator
+
+### Purpose
+
+Provides mathematical capabilities to the AI Agent.
+
+### Example Uses
+
+```text
+How many days until Rahul's birthday?
+```
+
+```text
+What will his age be next year?
+```
+
+The AI can perform calculations using the calculator tool.
+
+---
+
+# End-to-End Process
+
+## Phase 1: Indexing
+
+### Step 1
+
+Manual trigger starts workflow.
+
+### Step 2
+
+CSV file is downloaded from Google Drive.
+
+### Step 3
+
+CSV is converted into documents.
+
+### Step 4
+
+OpenAI creates embeddings.
+
+### Step 5
+
+Embeddings are stored in Pinecone.
+
+---
+
+## Phase 2: Retrieval
+
+### Step 1
+
+User sends a chat message.
+
+### Step 2
+
+AI Agent analyzes the request.
+
+### Step 3
+
+Pinecone Tool searches relevant records.
+
+### Step 4
+
+Retrieved documents are sent to GPT-4.1 Mini.
+
+### Step 5
+
+The AI generates a response.
+
+---
+
+# Example Query Flow
+
+## User Question
+
+```text
+When is Amit's birthday?
+```
+
+### Retrieval
+
+Pinecone finds matching record:
+
+```text
+Amit, 12 August 1998
+```
+
+### Response
+
+```text
+Amit's birthday is on 12 August 1998.
+```
+
+---
+
+# Technologies Used
+
+| Component         | Purpose                 |
+| ----------------- | ----------------------- |
+| n8n               | Workflow orchestration  |
+| Google Drive      | Source document storage |
+| CSV Loader        | Document parsing        |
+| OpenAI Embeddings | Vector generation       |
+| Pinecone          | Vector database         |
+| GPT-4.1 Mini      | Response generation     |
+| Memory Buffer     | Conversation memory     |
+| Calculator        | Arithmetic operations   |
+
+---
+
+# Key Features
+
+* Retrieval-Augmented Generation (RAG)
+* Semantic search using Pinecone
+* OpenAI-powered reasoning
+* Conversational memory
+* Birthday information retrieval
+* CSV-based knowledge source
+* Automated vector indexing
+
+---
+
+# Use Cases
+
+## Personal Birthday Assistant
+
+Retrieve birthdays from a structured dataset.
+
+## Employee Directory Search
+
+Store and retrieve employee details.
+
+## Customer Information Lookup
+
+Semantic search over customer records.
+
+## Lightweight Knowledge Base
+
+Query structured information using natural language.
+
+---
+
+# Conclusion
+
+This workflow demonstrates a complete RAG implementation in n8n. It ingests birthday data from a CSV file, generates OpenAI embeddings, stores them in Pinecone, and allows users to query the information through an AI-powered chat interface with memory and tool support.
