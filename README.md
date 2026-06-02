@@ -1793,3 +1793,6 @@ Query structured information using natural language.
 # Conclusion
 
 This workflow demonstrates a complete RAG implementation in n8n. It ingests birthday data from a CSV file, generates OpenAI embeddings, stores them in Pinecone, and allows users to query the information through an AI-powered chat interface with memory and tool support.
+
+<img width="734" height="353" alt="image" src="https://github.com/user-attachments/assets/cbbb0a7c-ec9a-4190-b833-8cb2af54efab" />
+
