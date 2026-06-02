@@ -1797,7 +1797,7 @@ This workflow demonstrates a complete RAG implementation in n8n. It ingests birt
 <img width="734" height="353" alt="image" src="https://github.com/user-attachments/assets/cbbb0a7c-ec9a-4190-b833-8cb2af54efab" />
 
 
-"""# n8n Workflow Audit & Documentation: RAG Project 2
+# n8n Workflow Audit & Documentation: RAG Project 2
 
 This document provides an architectural breakdown, data-flow mapping, and system validation audit for the **RAG Project 2** n8n workflow. This system is designed as an automated Retrieval-Augmented Generation (RAG) platform, split into an offline ingestion pipeline and an online interactive conversational agent with automated email delivery.
 
@@ -1811,3 +1811,5 @@ The **RAG Project 2** workflow is structured into two distinct execution pathway
 2. **Retrieval & Chat Agent Pipeline (Bottom Branch):** An interactive conversational interface triggered by chat messages. It processes user queries using a fine-tuned agent architecture (`gpt-4.1-mini`), leverages semantic search capabilities against the Pinecone index to answer queries, tracks conversation history, and forwards responses automatically via Gmail.
 
 ### High-Level Structural Diagram
+
+<img width="801" height="311" alt="image" src="https://github.com/user-attachments/assets/4b91fa46-9f5f-42a3-8cbe-863e637543f9" />
