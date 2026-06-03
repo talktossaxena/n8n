@@ -64,6 +64,7 @@
     },
     {
       "parameters": {
+        "hasOutputParser": true,
         "options": {
           "systemMessage": "You are a helpful assistant. Only use the Pinecone Vector Store Tool to retrieve the details of illness."
         }
@@ -176,7 +177,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        448,
+        400,
         -576
       ],
       "id": "892e0d47-b74b-4df3-b129-4ebe6ae5c5f8",
@@ -199,7 +200,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -192,
+        -240,
         -576
       ],
       "id": "0c1cc8e2-4800-4725-9eda-7f9fda7468f0",
@@ -213,7 +214,7 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        224,
+        80,
         -576
       ],
       "id": "8bd5688c-5f93-43be-8d5e-9eea7f226014",
@@ -262,7 +263,8 @@
       "parameters": {
         "sendTo": "talktossaxena@gmail.com",
         "subject": "Illness Details",
-        "message": "={{ $json.output }}",
+        "emailType": "text",
+        "message": "={{ $json.output['Illness Name'] }}\n\n{{ $json.output.Symptoms }}\n\n{{ $json.output.Cure }}",
         "options": {
           "appendAttribution": false
         }
@@ -270,7 +272,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        224,
+        128,
         -272
       ],
       "id": "9cf5ac17-76d2-4f02-bfd7-0992fac526c9",
@@ -282,6 +284,19 @@
           "name": "Gmail account"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Illness Name\": \"\",\n\t\"Symptoms\": \"\",\n    \"Cure\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        -48
+      ],
+      "id": "b26e2bcb-7905-4df4-9704-b0141e8f563e",
+      "name": "Structured Output Parser"
     }
   ],
   "pinData": {},
@@ -422,6 +437,17 @@
           }
         ]
       ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -430,7 +456,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "b2e891f6-400b-4799-9626-b87b005f5e63",
+  "versionId": "0a8ced1f-7241-4738-8bbc-181d4ec82978",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e65981d6b69d01272dda4bcd11b90796e4bf108e1ef7a197e3eac80ad7562365"
