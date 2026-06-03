@@ -106,7 +106,7 @@
     {
       "parameters": {
         "mode": "retrieve-as-tool",
-        "toolDescription": "Contains data about birthday.",
+        "toolDescription": "illness and disease data",
         "pineconeIndex": {
           "__rl": true,
           "value": "n8n-dense-index",
@@ -456,7 +456,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "0a8ced1f-7241-4738-8bbc-181d4ec82978",
+  "versionId": "f9e95ffa-46b2-4386-b9df-be8dc1284605",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e65981d6b69d01272dda4bcd11b90796e4bf108e1ef7a197e3eac80ad7562365"
