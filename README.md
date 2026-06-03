@@ -1813,3 +1813,144 @@ The **RAG Project 2** workflow is structured into two distinct execution pathway
 ### High-Level Structural Diagram
 
 <img width="801" height="311" alt="image" src="https://github.com/user-attachments/assets/4b91fa46-9f5f-42a3-8cbe-863e637543f9" />
+
+
+# Email Summary Agent — n8n Workflow
+
+## Overview
+
+This workflow runs automatically **every morning at 7 AM**, fetches all emails received in the past 24 hours, uses **GPT-4o-mini** to summarize them and extract action items, then sends a **beautifully formatted HTML email report** to the inbox.
+
+---
+
+## Flow Diagram
+
+```
+Daily 7AM Trigger (Schedule)
+        ↓
+Fetch Emails — Past 24 Hours (Gmail)
+        ↓
+Organize Email Data (Aggregate: id, From, To, CC, snippet)
+        ↓
+Summarize with OpenAI GPT-4o-mini
+        ↓
+Send HTML Summary Email (Gmail → talktossaxena@gmail.com)
+```
+
+---
+
+## Node-by-Node Breakdown
+
+### 1. Daily 7AM Trigger
+| Property | Value |
+|---|---|
+| Type | Schedule Trigger |
+| Runs At | Every day at **7:00 AM** |
+
+Automatically starts the workflow once per day. Adjust the `triggerAtHour` value to change the run time.
+
+---
+
+### 2. Fetch Emails — Past 24 Hours
+| Property | Value |
+|---|---|
+| Type | Gmail |
+| Operation | Get All |
+| Filter | Emails to `talktossaxena@gmail.com` received after yesterday's date |
+| Returns | All matching emails (no limit) |
+
+Builds a dynamic Gmail search query at runtime to fetch only emails received since yesterday. The date is computed automatically using JavaScript so the filter is always accurate regardless of when the workflow runs.
+
+---
+
+### 3. Organize Email Data
+| Property | Value |
+|---|---|
+| Type | Aggregate |
+| Mode | Aggregate all items into one |
+| Fields Extracted | `id`, `From`, `To`, `CC`, `snippet` |
+
+Collects all individual email items into a single aggregated object, keeping only the relevant fields. The `snippet` field provides a short preview of each email body without loading the full content.
+
+---
+
+### 4. Summarize Emails with OpenAI
+| Property | Value |
+|---|---|
+| Type | OpenAI node |
+| Model | `gpt-4o-mini` |
+| Output | Structured JSON |
+
+Sends all aggregated email data to GPT-4o-mini with a prompt instructing it to identify key details, issues, and action items. Returns a **structured JSON response** in this format:
+
+```json
+{
+  "summary_of_emails": [
+    "Point 1",
+    "Point 2",
+    "Point 3"
+  ],
+  "actions": [
+    { "name": "Person Name", "action": "Action required" },
+    { "name": "Person Name", "action": "Another action" }
+  ]
+}
+```
+
+---
+
+### 5. Send Summary — Morning
+| Property | Value |
+|---|---|
+| Type | Gmail |
+| Send To | `talktossaxena@gmail.com` |
+| Subject | `Email Summary - DD Mon YYYY-00:00 to DD Mon YYYY-07:00AM` |
+| Format | Styled HTML email |
+
+Sends the final report as a richly formatted HTML email. The subject line is dynamically generated to show the exact date range covered. The email body renders two sections:
+
+- **Summary of Emails** — bullet list of key points from all emails
+- **Actions** — list of people and the specific actions required from them
+
+The HTML email uses a blue header/footer design with card-style list items for easy reading.
+
+---
+
+## Email Report Sample Structure
+
+```
+┌─────────────────────────────────┐
+│         Email Summary           │  ← Blue header
+├─────────────────────────────────┤
+│ Summary of Emails:              │
+│ • Client X requested a call     │
+│ • Invoice #123 needs approval   │
+│ • Server alert from DevOps team │
+│                                 │
+│ Actions:                        │
+│ • John: Schedule a call         │
+│ • Finance: Approve invoice #123 │
+│ • DevOps: Review server alert   │
+└─────────────────────────────────┘
+```
+
+---
+
+## Credentials Required
+
+| Credential | Node | Purpose |
+|---|---|---|
+| **Gmail OAuth2** | Fetch Emails + Send Summary | Read inbox and send report |
+| **OpenAI account** | Summarize Emails | GPT-4o-mini API access |
+
+---
+
+## Workflow Settings
+
+| Setting | Value |
+|---|---|
+| Status | **Inactive** |
+| Execution Order | v1 |
+| Workflow ID | `JLAtXLz3Ph95A4nx` |
+
+
