@@ -1796,24 +1796,47 @@ This workflow demonstrates a complete RAG implementation in n8n. It ingests birt
 
 <img width="734" height="353" alt="image" src="https://github.com/user-attachments/assets/cbbb0a7c-ec9a-4190-b833-8cb2af54efab" />
 
+# RAG Project 2 — Workflow Summary
 
-# n8n Workflow Audit & Documentation: RAG Project 2
-
-This document provides an architectural breakdown, data-flow mapping, and system validation audit for the **RAG Project 2** n8n workflow. This system is designed as an automated Retrieval-Augmented Generation (RAG) platform, split into an offline ingestion pipeline and an online interactive conversational agent with automated email delivery.
+## Overview
+A RAG system that answers illness-related questions from medical PDFs using Pinecone vector search and GPT, then emails the response in a structured format.
 
 ---
 
-## 1. System Overview & Architecture
+## Two Pipelines
 
-The **RAG Project 2** workflow is structured into two distinct execution pathways operating over a shared vector storage foundation:
+### Pipeline 1 — Data Ingestion *(Run Once)*
+```
+Manual Trigger → Set 4 PDF URLs → Split URLs → Download PDFs
+→ Parse & Chunk (3000 chars) → Embed (OpenAI 1024-dim) → Store in Pinecone
+```
 
-1. **Ingestion Pipeline (Top Branch):** A manually triggered ETL (Extract, Transform, Load) sequence that downloads four public health and medical PDF documents, splits the text into manageable chunks, generates high-dimensional embeddings, and upserts them into a dense index on Pinecone.
-2. **Retrieval & Chat Agent Pipeline (Bottom Branch):** An interactive conversational interface triggered by chat messages. It processes user queries using a fine-tuned agent architecture (`gpt-4.1-mini`), leverages semantic search capabilities against the Pinecone index to answer queries, tracks conversation history, and forwards responses automatically via Gmail.
+### Pipeline 2 — Chat & Query *(Always On)*
+```
+Chat Trigger → AI Agent → Search Pinecone (Top 20)
+→ Structured Output Parser → Send Email (Gmail)
+```
 
-### High-Level Structural Diagram
+---
 
-<img width="801" height="311" alt="image" src="https://github.com/user-attachments/assets/4b91fa46-9f5f-42a3-8cbe-863e637543f9" />
+## Key Nodes
 
+| Node | Purpose |
+|---|---|
+| **Set File URLs** | 4 medical PDFs (chronic illness, disease handbooks) |
+| **Text Splitter** | 3000-char chunks, 500-char overlap |
+| **Embeddings OpenAI** | 1024-dim vectors (shared by both pipelines) |
+| **Pinecone Vector Store** | Stores & retrieves illness data |
+| **AI Agent** | gpt-4.1-mini + memory + Pinecone tool |
+| **Structured Output Parser** ⭐ | Forces JSON: `Illness Name`, `Symptoms`, `Cure` |
+| **Gmail** | Emails structured result to talktossaxena@gmail.com |
+
+---
+
+## Credentials Needed
+OpenAI · Pinecone · Gmail OAuth2
+
+<img width="908" height="364" alt="image" src="https://github.com/user-attachments/assets/b09b97fc-833b-4422-853a-d1b86f17f8c0" />
 
 # Email Summary Agent — n8n Workflow
 
