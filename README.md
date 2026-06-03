@@ -1878,7 +1878,7 @@ Chat Trigger → AI Agent → Search Pinecone (Top 20)
 ## Credentials Needed
 OpenAI · Pinecone · Gmail OAuth2
 
-<img width="908" height="364" alt="image" src="https://github.com/user-attachments/assets/b09b97fc-833b-4422-853a-d1b86f17f8c0" />
+<img width="833" height="330" alt="image" src="https://github.com/user-attachments/assets/e519f5cd-8326-42fe-9705-0004a96482e4" />
 
 # Email Summary Agent — n8n Workflow
 
