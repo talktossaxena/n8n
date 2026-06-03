@@ -1838,6 +1838,48 @@ OpenAI · Pinecone · Gmail OAuth2
 
 <img width="908" height="364" alt="image" src="https://github.com/user-attachments/assets/b09b97fc-833b-4422-853a-d1b86f17f8c0" />
 
+# RAG Project 3 — Workflow Summary
+
+## Overview
+A RAG system that answers illness-related questions from medical PDFs using Pinecone vector search and GPT, then emails the response in a well structured and detailed format.
+
+---
+
+## Two Pipelines
+
+### Pipeline 1 — Data Ingestion *(Run Once)*
+```
+Manual Trigger → Set 4 PDF URLs → Split URLs → Download PDFs
+→ Parse & Chunk (3000 chars) → Embed (OpenAI 1024-dim) → Store in Pinecone
+```
+
+### Pipeline 2 — Chat & Query *(Always On)*
+```
+Chat Trigger → AI Agent → Search Pinecone (Top 20)
+→ Structured Output Parser → Send Email (Gmail)
+```
+
+---
+
+## Key Nodes
+
+| Node | Purpose |
+|---|---|
+| **Set File URLs** | 4 medical PDFs (chronic illness, disease handbooks) |
+| **Text Splitter** | 3000-char chunks, 500-char overlap |
+| **Embeddings OpenAI** | 1024-dim vectors (shared by both pipelines) |
+| **Pinecone Vector Store** | Stores & retrieves illness data |
+| **AI Agent** | gpt-4.1-mini + memory + Pinecone tool |
+| **Structured Output Parser** ⭐ | Forces JSON: `Illness Name`, `Symptoms`, `Cure` |
+| **Gmail** | Emails structured result to talktossaxena@gmail.com |
+
+---
+
+## Credentials Needed
+OpenAI · Pinecone · Gmail OAuth2
+
+<img width="908" height="364" alt="image" src="https://github.com/user-attachments/assets/b09b97fc-833b-4422-853a-d1b86f17f8c0" />
+
 # Email Summary Agent — n8n Workflow
 
 ## Overview
