@@ -2038,3 +2038,4 @@ Both categories receive the same reply:
 ## Credentials Needed
 Gmail OAuth2 · OpenAI account
 
+<img width="918" height="183" alt="image" src="https://github.com/user-attachments/assets/802c4b44-b0d3-4ec2-8edf-2ba76ec8bcc9" />
