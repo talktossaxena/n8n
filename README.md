@@ -1953,4 +1953,4 @@ The HTML email uses a blue header/footer design with card-style list items for e
 | Execution Order | v1 |
 | Workflow ID | `JLAtXLz3Ph95A4nx` |
 
-
+<img width="1013" height="333" alt="image" src="https://github.com/user-attachments/assets/3d1f7b0a-3cfe-4186-8dae-5ebcaf05ca5c" />
