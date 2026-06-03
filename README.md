@@ -1977,3 +1977,64 @@ The HTML email uses a blue header/footer design with card-style list items for e
 | Workflow ID | `JLAtXLz3Ph95A4nx` |
 
 <img width="1013" height="333" alt="image" src="https://github.com/user-attachments/assets/3d1f7b0a-3cfe-4186-8dae-5ebcaf05ca5c" />
+
+# Email Labels — n8n Workflow Summary
+
+## Overview
+Monitors Gmail every minute, extracts the sender's name, classifies each email as **Promotional** or **Others**, applies the matching Gmail label, and sends an auto-reply.
+
+---
+
+## Flow
+```
+Gmail Trigger (every minute)
+        ↓
+Information Extractor → Extract sender name (GPT-5-mini)
+        ↓
+If: Sender name found?
+    ├── YES → Set intro = "Sender Name"
+    └── NO  → Set intro = "Hi,"
+        ↓
+Merge → Clean Data (message_id, threadId, text, intro)
+        ↓
+Text Classifier (GPT-5-mini)
+    ├── Promotional → Add Label → Auto-Reply
+    └── Others      → Add Label → Auto-Reply
+```
+
+---
+
+## Key Nodes
+
+| Node | Purpose |
+|---|---|
+| **Gmail Trigger** | Polls inbox every minute for new emails |
+| **Information Extractor** | Uses GPT to extract sender's name from email text |
+| **If** | Checks if sender name was found |
+| **Edit Fields / Edit Fields1** | Sets greeting to name or fallback *"Hi,"* |
+| **Merge** | Combines both branches back into one |
+| **Clean Data** | Prepares `message_id`, `threadId`, `text`, `intro` |
+| **Text Classifier** | Classifies email as *Promotional* or *Others* using GPT |
+| **Promotional / Others Email** | Adds the corresponding Gmail label to the message |
+| **Reply Promotional / Others** | Sends *"Thank you for your email."* auto-reply |
+
+---
+
+## Classification Logic
+
+| Category | Rule |
+|---|---|
+| **Promotional** | Email does **not** contain the word *"test"* |
+| **Others** | Email **contains** the word *"test"* |
+
+---
+
+## Auto-Reply Message
+Both categories receive the same reply:
+> *"Thank you for your email."*
+
+---
+
+## Credentials Needed
+Gmail OAuth2 · OpenAI account
+
