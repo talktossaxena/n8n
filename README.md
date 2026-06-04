@@ -2133,3 +2133,4 @@ News Agent
 - Retrieves up to 10 recent news articles.
 - Sends a summary email automatically.
 
+<img width="747" height="326" alt="image" src="https://github.com/user-attachments/assets/c6462c98-3e63-437a-a515-b42e14d77152" />
