@@ -1,0 +1,26 @@
+create n8n agent system prompt to achieve below requirements. Prompt should be in a file named prompt.txt
+1. Fetch News: Use Get News to collect recent articles on a given topic.
+2. Summarize Content: Use OpenAI to generate a clear, concise summary of the fetched news.
+3. Create Document: Use Create Document to generate a new Google Doc.
+4. Update Document: Use Upload Document to insert the AI-generated summary into the created Google Doc.
+5. Send Email: Use send a message to deliver the summary in a well-structured email to the user.
+6. Use following agent tools.
+   - gmail send message
+   - create google document
+   - update document in google doc
+   - use http tool to get the news
+
+create n8n workflow json file with following details.
+1. N8N Version
+   - 2.23.2
+2. News API
+   - GNews
+3. LLM Provider
+   - OpenAI
+4. How the workflow is triggered
+   - Chat
+5. Input parameters
+   - Email address
+6. Google Docs
+   - create a new document everytime with name date-time
+

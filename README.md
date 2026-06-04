@@ -2081,3 +2081,55 @@ Both categories receive the same reply:
 Gmail OAuth2 · OpenAI account
 
 <img width="918" height="183" alt="image" src="https://github.com/user-attachments/assets/802c4b44-b0d3-4ec2-8edf-2ba76ec8bcc9" />
+
+
+# News Summary Agent
+
+## Overview
+
+This n8n workflow automatically:
+
+1. Receives a topic and email address from chat.
+2. Fetches recent news from GNews.
+3. Uses OpenAI GPT-4o to generate a summary.
+4. Creates a new Google Document.
+5. Writes the summary to the document.
+6. Sends the summary and document link via Gmail.
+
+## Workflow
+
+```text
+Chat Trigger
+    ↓
+News Agent
+    ├─ Get News (GNews API)
+    ├─ OpenAI GPT-4o
+    ├─ Create Google Document
+    ├─ Update Google Document
+    └─ Gmail Send Message
+```
+
+## Input
+
+- Topic
+- Email Address
+
+## Output
+
+- News Summary
+- Google Document URL
+- Email Delivery Status
+
+## Tools Used
+
+- OpenAI GPT-4o
+- GNews API
+- Google Docs
+- Gmail
+
+## Notes
+
+- Creates a new Google Document for every request.
+- Retrieves up to 10 recent news articles.
+- Sends a summary email automatically.
+

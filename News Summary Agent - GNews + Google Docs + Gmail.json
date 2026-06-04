@@ -1,0 +1,254 @@
+{
+  "name": "News Summary Agent - GNews + Google Docs + Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d9c88b52-be16-4963-aaa8-9fbce24298d1",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        80
+      ],
+      "webhookId": "53839540-8eb7-497a-a5bf-3b9e540d9db9"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "f1e89a07-82b2-41b3-897b-b2ae925cc3ba",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        304
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KRozJh8u2fVyej5q",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search recent news articles using GNews API. Input topic. Return title, source, description, URL and publication date.",
+        "url": "https://gnews.io/api/v4/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            },
+            {
+              "name": "lang",
+              "value": "en"
+            },
+            {
+              "name": "country",
+              "value": "in"
+            },
+            {
+              "name": "max",
+              "value": "10"
+            },
+            {
+              "name": "sortby",
+              "value": "publishedAt"
+            },
+            {
+              "name": "apikey",
+              "value": "=fb1cb8a23fbd8a3e15c8e9abeccfc1d9"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f20e850-ceb5-456f-b82d-122ee6f4c5a0",
+      "name": "Get News",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "folderId": "default",
+        "title": "={{ $fromAI('Title', ``, 'string') }}"
+      },
+      "id": "7f136382-2961-4d08-8be9-38cbe854d2b2",
+      "name": "Create Google Document",
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 1,
+      "position": [
+        224,
+        304
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "ka4njph5AuXTLoZT",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "documentURL": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_ID_or_URL', ``, 'string') }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('actionFields0_Text', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "id": "4799c992-3866-4c39-837c-96d24abf04ed",
+      "name": "Update Google Document",
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 1,
+      "position": [
+        368,
+        304
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "ka4njph5AuXTLoZT",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "id": "6c708a31-0040-4d9e-8eb8-7a6668461e9c",
+      "name": "Gmail Send Message",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2,
+      "position": [
+        528,
+        304
+      ],
+      "webhookId": "cd6f5fed-3186-4a51-bf12-c843a18301b2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gSeOWhzlRCurlAsF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an autonomous News Research and Distribution Agent running inside n8n.\n\nYour goal is to collect the latest news on a user-provided topic, generate a concise and professional summary, create a Google Document containing the summary, and email the results to the specified recipient.\n\n## AVAILABLE TOOLS\n\n1. HTTP Tool\n\n   * Use this tool to retrieve news articles from the GNews API.\n\n2. Create Google Document\n\n   * Creates a new Google Document.\n\n3. Update Document in Google Docs\n\n   * Updates content in an existing Google Document.\n\n4. Gmail Send Message\n\n   * Sends emails to recipients.\n\n## WORKFLOW OBJECTIVE\n\nWhen a user provides:\n\n* Topic\n* Email Address\n\nExecute the following steps:\n\n## STEP 1: FETCH NEWS\n\n* Use the HTTP Tool to call the GNews API.\n* Retrieve the latest news articles related to the provided topic.\n* Prefer recent and relevant articles.\n* Collect:\n\n  * Title\n  * Source\n  * Publication Date\n  * Description\n  * URL\n\n## STEP 2: ANALYZE AND SUMMARIZE\n\n* Review all retrieved articles.\n* Remove duplicates.\n* Identify major themes and key developments.\n* Generate a professional summary that includes:\n\n  * Executive Summary\n  * Key Highlights\n  * Important Developments\n  * Market/Industry Impact (if applicable)\n  * Sources Referenced\n\n## SUMMARY REQUIREMENTS\n\n* Clear and concise\n* Professional business language\n* Well structured\n* Maximum 2000 words unless the user requests otherwise\n* Use bullet points where appropriate\n\n## STEP 3: CREATE GOOGLE DOCUMENT\n\n* Create a new Google Document.\n\n* Document name format:\n\n  News Summary - <Topic>-YYYY-MM-DD_HH-mm-ss\n\n* Always create a NEW document.\n\n* Never reuse an existing document.\n\n## STEP 4: UPDATE DOCUMENT\n\n* Update the generated summary into the newly created Google Document.\n* Format the document as:\n\n# News Summary\n\n## Topic\n\n<User Topic>\n\n## Generated On\n\n<Timestamp>\n\n## Executive Summary\n\n## Key Highlights\n\n## Important Developments\n\n## Sources\n\n## STEP 5: SEND EMAIL\n\n* Send an email using Gmail Send Message.\n\n## EMAIL FORMAT\n\nSubject:\nNews Summary Report - <Topic>\n\nBody:\n\nHello,\n\nPlease find below the latest news summary for:\n\nTopic: <Topic>\n\n<Executive Summary>\n\nKey Highlights:\n\n* Highlight 1\n* Highlight 2\n* Highlight 3\n\nGoogle Document: <Document URL>\n\nRegards,\nNews Research Agent\n\n## OUTPUT REQUIREMENTS\n\nReturn:\n\n1. Summary generated\n2. Google Document URL\n3. Email delivery status\n\n## ERROR HANDLING\n\n* If no articles are found, inform the user.\n* If document creation fails, report the error.\n* If email delivery fails, report the error.\n* Continue whenever possible and provide partial results.\n\n## IMPORTANT RULES\n\n* Always create a new Google Document.\n* Always send the email when a valid email address is provided.\n* Never fabricate news.\n* Only summarize information returned by the GNews API.\n* Keep summaries factual and neutral."
+        }
+      },
+      "id": "73018e17-f6c6-457c-a17c-4c2ac3173d8e",
+      "name": "News Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        160,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "News Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get News": {
+      "ai_tool": [
+        [
+          {
+            "node": "News Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Google Document": {
+      "ai_tool": [
+        [
+          {
+            "node": "News Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Document": {
+      "ai_tool": [
+        [
+          {
+            "node": "News Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Send Message": {
+      "ai_tool": [
+        [
+          {
+            "node": "News Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "News Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a6210be8-992e-45d5-8a68-2ae8237be628",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e65981d6b69d01272dda4bcd11b90796e4bf108e1ef7a197e3eac80ad7562365"
+  },
+  "nodeGroups": [],
+  "id": "Jib7f2aIm2kEHGtG",
+  "tags": []
+}
