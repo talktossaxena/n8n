@@ -2134,3 +2134,35 @@ News Agent
 - Sends a summary email automatically.
 
 <img width="747" height="326" alt="image" src="https://github.com/user-attachments/assets/c6462c98-3e63-437a-a515-b42e14d77152" />
+
+# RAG Project 4
+
+## Overview
+
+This n8n workflow is a Retrieval-Augmented Generation (RAG) chatbot that answers user questions using information stored in a Pinecone vector database.
+
+## Workflow
+
+Chat Trigger -> AI Agent -> OpenAI Chat Model + Postgres Chat Memory + Pinecone Vector Store
+
+## Components
+
+- Chat Trigger – Receives user messages.
+- AI Agent – Processes user queries and generates responses.
+- OpenAI Chat Model – Generates responses.
+- Postgres Chat Memory – Stores conversation history.
+- Pinecone Vector Store – Retrieves relevant information.
+- OpenAI Embeddings – Converts text into vectors.
+
+## How It Works
+
+1. User sends a question.
+2. AI Agent searches Pinecone.
+3. Chat history is retrieved from Postgres.
+4. OpenAI generates a response.
+5. Response is returned to the user.
+
+## Use Case
+
+A chatbot that answers illness-related questions using a Pinecone knowledge base and conversation memory.
+
