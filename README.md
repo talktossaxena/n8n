@@ -2166,3 +2166,4 @@ Chat Trigger -> AI Agent -> OpenAI Chat Model + Postgres Chat Memory + Pinecone 
 
 A chatbot that answers illness-related questions using a Pinecone knowledge base and conversation memory.
 
+<img width="502" height="359" alt="image" src="https://github.com/user-attachments/assets/845394db-a9de-451b-b401-e553a656d8bd" />
