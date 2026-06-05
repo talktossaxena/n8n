@@ -1,0 +1,482 @@
+{
+  "name": "Customer Feedback",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Customer Feedback Form",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Enter your name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "placeholder": "Enter your email address",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Enter your feedback",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Rating",
+              "fieldType": "dropdown",
+              "defaultValue": "😊Positive",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "😊Positive"
+                  },
+                  {
+                    "option": "😞Negative"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -608,
+        160
+      ],
+      "id": "960fe3f2-e532-4c5d-9eaf-f3cba7b8065b",
+      "name": "On form submission",
+      "webhookId": "7dfe30dc-63dd-4f25-b965-eaf8c88b29fc"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json['Enter your feedback'] }}",
+        "options": {
+          "categories": "Positive, Negative",
+          "enableAutoFixing": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        160
+      ],
+      "id": "8360f899-f7fb-4780-9f56-e1e1b2151880",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        128
+      ],
+      "id": "de4e00c1-eaeb-4b0b-bdc8-9f2d25491111",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KRozJh8u2fVyej5q",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Plib0cLgwwQLKQjtB4sWZRtYvMzHq9z-jFPupHrHnMA",
+          "mode": "list",
+          "cachedResultName": "Customer Feedback Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Plib0cLgwwQLKQjtB4sWZRtYvMzHq9z-jFPupHrHnMA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1726686165,
+          "mode": "list",
+          "cachedResultName": "Negative",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Plib0cLgwwQLKQjtB4sWZRtYvMzHq9z-jFPupHrHnMA/edit#gid=1726686165"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('On form submission').item.json.Name }}",
+            "Email": "={{ $('On form submission').item.json.Email }}",
+            "Feedback": "={{ $('On form submission').item.json['Enter your feedback'] }}",
+            "Rating": "={{ $('On form submission').item.json.Rating }}",
+            "AI Suggestion": "={{ $json.text }}",
+            "Submission Time": "={{ $('On form submission').item.json.submittedAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Suggestion",
+              "displayName": "AI Suggestion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submission Time",
+              "displayName": "Submission Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        304
+      ],
+      "id": "b77b2c48-38fe-4f50-8316-350593e99c3c",
+      "name": "Append row in Negative sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kXNxmcFmVxWUrz2L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Plib0cLgwwQLKQjtB4sWZRtYvMzHq9z-jFPupHrHnMA",
+          "mode": "list",
+          "cachedResultName": "Customer Feedback Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Plib0cLgwwQLKQjtB4sWZRtYvMzHq9z-jFPupHrHnMA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Positive",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Plib0cLgwwQLKQjtB4sWZRtYvMzHq9z-jFPupHrHnMA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Submission Time": "={{ $('On form submission').item.json.submittedAt }}",
+            "Rating": "={{ $('On form submission').item.json.Rating }}",
+            "Feedback": "={{ $('On form submission').item.json['Enter your feedback'] }}",
+            "Email": "={{ $('On form submission').item.json.Email }}",
+            "Name": "={{ $('On form submission').item.json.Name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submission Time",
+              "displayName": "Submission Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        16
+      ],
+      "id": "a158adb3-a146-430c-8a07-d660029efbb8",
+      "name": "Append row in Positive Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kXNxmcFmVxWUrz2L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a customer support representative for an AI Automation Agency known as xyz specialized in helping SME implement AI Agents and AI Automation solutions.\n\nClient just submitted feedback about our services which you can see below.\n\nPlease provide a concise suggestion on what xyz can do to address their concerns and improve client satisfaction in the future.\n\nFormat as HTML email and sign from SSinha at xyz. Return only HTML code. do not include ```html\n\nCustomer Name:\n {{ $('On form submission').item.json.Name }}\n\nFeedback:\n{{ $('On form submission').item.json['Enter your feedback'] }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -32,
+        304
+      ],
+      "id": "5b87cee6-f5a2-4bd8-aca1-53abbc1d7667",
+      "name": "Compose response for Negative"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a customer support representative for an AI Automation Agency known as xyz specialized in helping SME implement AI Agents and AI Automation solutions.\n\nWrite a friendly response to the customer feedback below. Format as HTML email and sign from SSinha at xyz. Return only HTML code. do not include ```html\n\nCustomer Name:\n {{ $('On form submission').item.json.Name }}\n\nFeedback:\n{{ $('On form submission').item.json['Enter your feedback'] }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        320,
+        -96
+      ],
+      "id": "5ccb9f1d-240a-4091-908a-b3a2d2203ecd",
+      "name": "Compose response for Positive"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Thank you for your valuable feedback",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        16
+      ],
+      "id": "2544025a-b9aa-4761-8a79-55ff00bda567",
+      "name": "Send Thank you email",
+      "webhookId": "1dc6c322-f808-4ac6-a5b3-49387de02e0b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gSeOWhzlRCurlAsF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Thank you for your valuable feedback",
+        "message": "={{ $('Compose response for Negative').item.json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        304
+      ],
+      "id": "c916f14c-7be7-4ee2-a044-24a79e5ae9a6",
+      "name": "Send Apology email",
+      "webhookId": "1dc6c322-f808-4ac6-a5b3-49387de02e0b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gSeOWhzlRCurlAsF",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Compose response for Positive",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Compose response for Negative",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Append row in Positive Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Compose response for Negative",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in Negative sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Apology email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in Positive Sheet": {
+      "main": [
+        [
+          {
+            "node": "Compose response for Positive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose response for Negative": {
+      "main": [
+        [
+          {
+            "node": "Append row in Negative sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose response for Positive": {
+      "main": [
+        [
+          {
+            "node": "Send Thank you email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c9af8d60-b57c-419e-bfce-16353e23d516",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e65981d6b69d01272dda4bcd11b90796e4bf108e1ef7a197e3eac80ad7562365"
+  },
+  "nodeGroups": [],
+  "id": "ToeNI6RxlM7OkEtq",
+  "tags": []
+}
