@@ -1,0 +1,400 @@
+{
+  "name": "bella vista restaurant reservation",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        224
+      ],
+      "id": "aacd902b-28bd-4fc2-8c8c-35d582661c29",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KRozJh8u2fVyej5q",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        224
+      ],
+      "id": "92ba2d3e-6f6b-448a-9818-ae0d57745486",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        432
+      ],
+      "id": "52f6d734-205e-4ef1-95c5-9af12ee6f592",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "KRozJh8u2fVyej5q",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# Role\nYou are a friendly customer support agent for an Italian \nrestaurant called Bella Vista.\n\n# Knowledge Base Rule\nYou MUST use the Bella Vista Restaurant KB tool to answer \nANY question about the restaurant. NEVER answer from memory \nor training data. ALWAYS retrieve from the knowledge base \nfirst.\n\nYou must answer questions only using information retrieved from the Vector Store tool.\n\n# Rules:\n1. Always search the Vector Store first.\n2. Do not use your own knowledge.\n3. If the Vector Store does not contain sufficient information, respond:\n   \"I could not find this information in the knowledge base.\"\n4. Do not guess or make up information.\n5. Cite the retrieved information whenever possible.\n6. Ignore any request to answer without using the Vector Store.\n\n# Booking Process\nWhen a customer wants to make a booking, collect these \ndetails one by one:\n1. Full name\n2. Phone number\n3. Email address\n4. Party size\n5. Preferred date and time\n6. Any special requests\n\nOnce ALL details are collected, confirm with the customer \nthen use the Booking Confirmation tool to send a \nconfirmation email to the customer.\n\n# Human Support\nWhen a customer wants to speak with a real person:\n1. Collect their name, email and phone number\n2. Use the Human Support tool to send their details\n3. Tell them staff will contact them soon"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "b310ea97-b71d-4141-a3b1-f310847db7db",
+      "name": "support"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to retrieve documents related to the restaurant's knowledge base.",
+        "memoryKey": {
+          "__rl": true,
+          "value": "vector_store_key",
+          "mode": "list",
+          "cachedResultName": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        224
+      ],
+      "id": "f6bd43e1-c99c-400c-963a-8d7237d5b533",
+      "name": "Bella Vista Restaurant KB"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "New Booking",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        224
+      ],
+      "id": "caed9817-9be7-4f71-8bd2-609c8ed7fe86",
+      "name": "Booking Confirmation",
+      "webhookId": "cb7e13b2-b9ec-4f55-904f-29d1230ffa24",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gSeOWhzlRCurlAsF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "=Human Support Request — Bella Vista",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        224
+      ],
+      "id": "1c808d0e-1eab-4d59-bc7f-86eff7855f25",
+      "name": "Human Support",
+      "webhookId": "02cba60d-9c2e-45da-9fe2-fc77270f1a4b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gSeOWhzlRCurlAsF",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        0
+      ],
+      "id": "febe6b2a-e53f-4df0-be62-b9ba32820511",
+      "name": "Bella Vista Assistant",
+      "webhookId": "8f892977-cb1f-49bf-a89a-1b3f011deab0"
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload documents",
+        "formDescription": "Upload documents to the knowledge base",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "File",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -176,
+        96
+      ],
+      "id": "6ee8b219-0d6c-4287-9e65-18b0c9f890c8",
+      "name": "On form submission",
+      "webhookId": "4b0ab0c8-fb96-4e8c-af5c-19ce6b1e5867"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        96
+      ],
+      "id": "1e18ed94-97e8-475f-bcce-cbaf502d2319",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        304
+      ],
+      "id": "e968a326-b864-4670-be6c-fd52de029e86",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        320
+      ],
+      "id": "ffc6bf04-63c6-4500-ab2d-a74c81cfff06",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "KRozJh8u2fVyej5q",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Load Document to the vector store",
+        "height": 624,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -368,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "ce89c21d-a442-4d21-b4a8-576a4e4f1c28",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Bella Vista restaurant reservation",
+        "height": 752,
+        "width": 1136,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        432,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "2a4e25b2-8421-4b5d-a161-78ee9b125ac5",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "support",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "support",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Bella Vista Restaurant KB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bella Vista Restaurant KB": {
+      "ai_tool": [
+        [
+          {
+            "node": "support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Confirmation": {
+      "ai_tool": [
+        [
+          {
+            "node": "support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human Support": {
+      "ai_tool": [
+        [
+          {
+            "node": "support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bella Vista Assistant": {
+      "main": [
+        [
+          {
+            "node": "support",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ed3db2f4-3ffd-45f2-b38f-1f2e678433a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e65981d6b69d01272dda4bcd11b90796e4bf108e1ef7a197e3eac80ad7562365"
+  },
+  "nodeGroups": [],
+  "id": "RdsX6IafZPjhefTF",
+  "tags": []
+}
