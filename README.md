@@ -2290,3 +2290,5 @@ Provides a simple AI-powered finance tracker that automatically records expenses
 
 <img width="960" height="220" alt="image" src="https://github.com/user-attachments/assets/cc2881ce-151d-478c-b97c-cc31b446a9e9" />
 
+<img width="994" height="398" alt="image" src="https://github.com/user-attachments/assets/671d5acb-9b2a-4638-89af-8a4d6716e8b4" />
+
