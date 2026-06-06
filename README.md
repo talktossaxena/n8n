@@ -2168,5 +2168,122 @@ A chatbot that answers illness-related questions using a Pinecone knowledge base
 
 <img width="502" height="359" alt="image" src="https://github.com/user-attachments/assets/845394db-a9de-451b-b401-e553a656d8bd" />
 
+# Customer Feedback
+
+## Overview
+Collects customer feedback via a web form, analyses sentiment using AI, stores results in Google Sheets, and sends a personalised email reply automatically.
+
+---
+
+## Flow
+
+```
+Form Submission
+        ↓
+Sentiment Analysis (GPT — Positive / Negative)
+        ↓
+    ┌─────────────────────────────────────┐
+    │ POSITIVE                NEGATIVE    │
+    ↓                              ↓      │
+Save to Positive Sheet    Compose Apology (GPT)
+        ↓                              ↓
+Compose Thank You (GPT)   Save to Negative Sheet
+        ↓                              ↓
+Send Thank You Email       Send Apology Email
+```
+
+---
+
+## Key Nodes
+
+| Node | Purpose |
+|---|---|
+| **Form Trigger** | Collects Name, Email, Feedback, Rating (Positive/Negative) |
+| **Sentiment Analysis** | AI classifies feedback as Positive or Negative |
+| **Compose response for Positive** | GPT writes a friendly thank-you HTML email |
+| **Compose response for Negative** | GPT writes an apology + improvement suggestions HTML email |
+| **Append row — Positive Sheet** | Saves feedback to the Positive tab in Google Sheets |
+| **Append row — Negative Sheet** | Saves feedback + AI suggestion to the Negative tab |
+| **Send Thank You Email** | Sends friendly reply to customer |
+| **Send Apology Email** | Sends apology reply to customer |
+
+---
+
+## Google Sheets Structure
+
+| Sheet | Columns |
+|---|---|
+| **Positive** | Name, Email, Feedback, Rating, Submission Time |
+| **Negative** | Name, Email, Feedback, Rating, **AI Suggestion**, Submission Time |
+
+> The Negative sheet also stores the AI-generated suggestion for future reference.
+
+---
+
+## Credentials Needed
+OpenAI · Gmail OAuth2 · Google Sheets OAuth2
+
+## Settings
+| | |
+|---|---|
+| Status | **Inactive** — activate to go live |
+| Signed by | SSinha at xyz |
+
 <img width="767" height="277" alt="image" src="https://github.com/user-attachments/assets/5a87b013-9bd8-4d07-bde3-37eb8c79f988" />
 
+
+# Finance Tracker
+
+## Overview
+
+This n8n workflow helps users record income and expenses using natural language.
+
+## Workflow
+
+Chat Trigger
+      ↓
+AI Agent
+      ↓
+Expense Database Tool
+      ↓
+Extract Expense Details
+      ↓
+Save to Google Sheets
+
+## How It Works
+
+1. User enters an expense or income in chat.
+2. AI Agent understands the request.
+3. Expense details are converted into structured data.
+4. Information such as:
+   - Description
+   - Cost
+   - Date
+   - Type (Debit/Credit)
+
+   is extracted automatically.
+5. Data is saved to Google Sheets.
+
+## Example
+
+Input:
+
+I bought a bike for $7000 in June 2026
+
+Saved Data:
+
+| Description | Cost | Date | Type |
+|------------|------|------|------|
+| Bike | 7000 | June 2026 | Debit |
+
+## Tools Used
+
+- Chat Trigger
+- OpenAI GPT
+- AI Agent
+- Information Extractor
+- Google Sheets
+
+## Outcome
+
+Provides a simple AI-powered finance tracker that automatically records expenses and income in a spreadsheet.
