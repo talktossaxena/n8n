@@ -2287,3 +2287,6 @@ Saved Data:
 ## Outcome
 
 Provides a simple AI-powered finance tracker that automatically records expenses and income in a spreadsheet.
+
+<img width="960" height="220" alt="image" src="https://github.com/user-attachments/assets/cc2881ce-151d-478c-b97c-cc31b446a9e9" />
+
