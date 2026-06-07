@@ -2351,5 +2351,6 @@ Extract CV (PDF)      Extract JD (PDF)
 | **Append row in sheet** | Saves all candidate data + score to Google Sheets |
 | **Send a message** | Emails the score and justification to the address provided in the form |
 
-<img width="951" height="301" alt="image" src="https://github.com/user-attachments/assets/4ee68206-b103-40da-9aeb-e569ad960df0" />
+<img width="941" height="272" alt="image" src="https://github.com/user-attachments/assets/6b1991b0-4aec-450a-9cc5-b53faae1e39d" />
+
 
