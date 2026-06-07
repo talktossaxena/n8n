@@ -2351,6 +2351,5 @@ Extract CV (PDF)      Extract JD (PDF)
 | **Append row in sheet** | Saves all candidate data + score to Google Sheets |
 | **Send a message** | Emails the score and justification to the address provided in the form |
 
-## Fix vs V1
-This version **passes the Job Description directly** into the AI Agent prompt — solving the key gap in V1 where no JD was provided and scores were generated blindly.
+<img width="951" height="301" alt="image" src="https://github.com/user-attachments/assets/4ee68206-b103-40da-9aeb-e569ad960df0" />
 
