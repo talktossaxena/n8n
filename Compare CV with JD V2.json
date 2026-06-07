@@ -1,0 +1,471 @@
+{
+  "name": "Compare CV with JD V2",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        528
+      ],
+      "id": "ef86e7d1-25ed-4347-b0ab-dc4bce29ae09",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Wr69mpkxdJHtgTfi",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Resume: {{ $('Extract from CV File').item.json.text }}\nJob Description: {{ $('Extract from JD File').item.json.text }}",
+        "options": {
+          "systemMessage": "** Purpose **\nYou are a CV Evaluation and Summarization Agent.\nYou must also evaluate how well the candidate fits a specified job role and assign a relevance score (1–10), followed by a short justification.\n\n** How It Works **\nWhen provided with a CV and job description, follow this process:\n\n1. Evaluate the Candidate for the Job Role\n\n- Compare the candidate’s qualifications and experience with the job requirements.\n- Assign a score from 1–10 based on relevance:\n\n1–3: Weak match\n\n4–6: Moderate match\n\n7–8: Strong match\n\n9–10: Excellent match\n\n- Provide a brief justification for the score. Mention strengths and gaps directly related to the role — no assumptions or interpretations."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        560
+      ],
+      "id": "eb591d6d-adb2-4ad6-bab6-14580d9e789b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n \"type\": \"object\",\n \"properties\": {\n \"CVName\": {\n \"type\": \"string\"\n },\n \"CVEmail\": {\n \"type\": \"string\",\n \"format\": \"email\"\n },\n \"CVPhoneNumber\": {\n \"type\": \"string\",\n \"pattern\": \"^(\\\\+\\\\d{1,3}[- ]?)?\\\\d{10}$\"\n },\n \"CVSkills\": {\n \"type\": \"string\"\n },\n \"CVQualifications\": {\n \"type\": \"string\"\n },\n \"CVCertifications\": {\n \"type\": \"string\"\n  },\n \"CVJobHistory\": {\n \"type\": \"string\"\n }\n },\n \"required\": [\"CVName\", \"CVEmail\", \"CVPhoneNumber\",\"CVSkills\",\"CVQualifications\",\"CVCertification\",\"CVJobHistory\"]\n}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        304
+      ],
+      "id": "59ac0ae1-4fc2-485f-bae0-fdb9ee16db54",
+      "name": "Information Extractor CV"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "Resume",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        416
+      ],
+      "id": "cab50ece-532e-4691-9aaf-62c18279e5b3",
+      "name": "Extract from CV File"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "=JobDescription",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        704
+      ],
+      "id": "59ecd5ae-4dbd-48be-9407-3aa0f76a15b5",
+      "name": "Extract from JD File"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        64,
+        560
+      ],
+      "id": "2acadc66-a844-4e77-bef0-ddc801ba289d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n \"type\": \"object\",\n \"properties\": {\n \"Score\": {\n \"type\": \"string\"\n },\n \"Justification\": {\n \"type\": \"string\"\n }\n },\n \"required\": [\"Score\", \"Justification\"]\n}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        560
+      ],
+      "id": "dffda149-c481-49cf-b3b6-231f3d6dda66",
+      "name": "Score and Justification Extractor"
+    },
+    {
+      "parameters": {
+        "formTitle": "Resume Evaluation",
+        "formDescription": "Upload CV and JD for evaluation",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "file",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "JobDescription",
+              "fieldType": "file",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -736,
+        560
+      ],
+      "id": "aa589088-7815-4629-aa41-300daa4958ea",
+      "name": "On form submission",
+      "webhookId": "71ca5bc3-15ff-4ffc-85ff-150aadb78679"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1fpIR9XiNLg2jHS4pyahR8cEfZW9ZOrT92ZNwqmrD4IE",
+          "mode": "list",
+          "cachedResultName": "Compare CV with JD",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fpIR9XiNLg2jHS4pyahR8cEfZW9ZOrT92ZNwqmrD4IE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fpIR9XiNLg2jHS4pyahR8cEfZW9ZOrT92ZNwqmrD4IE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Information Extractor CV').item.json.output.CVName }}",
+            "Email": "={{ $('Information Extractor CV').item.json.output.CVEmail }}",
+            "Number": "={{ $('Information Extractor CV').item.json.output.CVPhoneNumber }}",
+            "Skill Set": "={{ $('Information Extractor CV').item.json.output.CVSkills }}",
+            "Qualifications": "={{ $('Information Extractor CV').item.json.output.CVQualifications }}",
+            "Certifications": "={{ $('Information Extractor CV').item.json.output.CVCertifications }}",
+            "Job History": "={{ $('Information Extractor CV').item.json.output.CVJobHistory }}",
+            "Score": "={{ $json.output.Score }}",
+            "Justification": "={{ $json.output.Justification }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Skill Set",
+              "displayName": "Skill Set",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Qualifications",
+              "displayName": "Qualifications",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Certifications",
+              "displayName": "Certifications",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job History",
+              "displayName": "Job History",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Justification",
+              "displayName": "Justification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        560
+      ],
+      "id": "50bcfc77-9bd7-46b4-bdc2-12925783bb04",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zvL46vs5DSCyLSCp",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "CV vs JD Evaluation",
+        "emailType": "text",
+        "message": "=Name: {{ $json.Name }}\nEmail: {{ $json.Email }}\nPhone Number: {{ $json.Number }}\n\n{{ $json.Score }}\n{{ $json.Justification }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        560
+      ],
+      "id": "21ef6c9c-9328-4e13-bfc7-c802d18f18ae",
+      "name": "Send a message",
+      "webhookId": "98a45b35-5f29-4382-9ac3-495dcbd009b3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m8GsjbkLoYdd9aig",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 752,
+        "width": 2272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -832,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "514fb946-d3a6-4c57-878e-1a7c99074d92",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor CV",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Score and Justification Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Score and Justification Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor CV": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from CV File": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from JD File": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score and Justification Extractor": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from CV File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from JD File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2e7411e7-cc96-41f9-bf97-4f6f30cd9f6d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0131a17b96b44353fccb9de185af8d8d4e841bbd789647bd5969edaa4a36752"
+  },
+  "nodeGroups": [],
+  "id": "3O888V1vcYVYn5C2",
+  "tags": []
+}

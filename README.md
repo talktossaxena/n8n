@@ -2290,5 +2290,67 @@ Provides a simple AI-powered finance tracker that automatically records expenses
 
 <img width="960" height="220" alt="image" src="https://github.com/user-attachments/assets/cc2881ce-151d-478c-b97c-cc31b446a9e9" />
 
+# Bella Vista Restaurant Reservation — Workflow Summary
+
+## What It Does
+An AI-powered customer support chatbot for **Bella Vista** Italian restaurant that handles FAQs, table reservations, and human support escalations.
+
+## Two Parts
+
+**1. Knowledge Base Setup**
+Staff upload documents (menu, FAQs, hours) via a form → embedded via OpenAI → stored in an in-memory vector store.
+
+**2. Customer Chat**
+A public chat interface powered by **GPT-5-mini** with three tools:
+
+| Tool | When Used |
+|---|---|
+| **Restaurant KB** | Answering any question — always searches docs first |
+| **Booking Confirmation** | Collects 6 details (name, phone, email, party size, date, special requests) then emails customer |
+| **Human Support** | Customer requests a real person → emails staff with contact details |
+
+## Tech Stack
+n8n · GPT-5-mini · OpenAI Embeddings · In-Memory Vector Store · Gmail
+
 <img width="994" height="398" alt="image" src="https://github.com/user-attachments/assets/671d5acb-9b2a-4638-89af-8a4d6716e8b4" />
+
+# Compare CV with JD V2 — Workflow Summary
+
+## What It Does
+Accepts a CV and Job Description via a web form, uses AI to score how well the candidate matches the role, saves results to Google Sheets, and emails the evaluation back to the submitter.
+
+## Flow
+
+```
+Form Submission (CV + JD + Email)
+        ↓                    ↓
+Extract CV (PDF)      Extract JD (PDF)
+        ↓                    ↓
+  Info Extractor CV        Merge
+  (name, email, phone,       ↓
+   skills, qualifications, AI Agent (GPT-5-mini)
+   certifications,           → scores CV against JD (1–10)
+   job history)              ↓
+                     Score & Justification Extractor
+                             ↓
+                     Append row in Google Sheets
+                             ↓
+                     Send Email to submitter
+```
+
+## Key Nodes
+
+| Node | Role |
+|---|---|
+| **On form submission** | Entry point — collects Resume (PDF), Job Description (PDF), and Email |
+| **Extract from CV / JD File** | Parses both PDFs into plain text |
+| **Information Extractor CV** | Pulls structured fields from CV (name, email, phone, skills, qualifications, certifications, job history) |
+| **Merge** | Combines CV and JD text streams before passing to AI |
+| **AI Agent** | Compares CV against JD and produces a score (1–10) with justification |
+| **Score and Justification Extractor** | Parses the AI's output into clean `Score` and `Justification` fields |
+| **Append row in sheet** | Saves all candidate data + score to Google Sheets |
+| **Send a message** | Emails the score and justification to the address provided in the form |
+
+## Fix vs V1
+This version **passes the Job Description directly** into the AI Agent prompt — solving the key gap in V1 where no JD was provided and scores were generated blindly.
 
